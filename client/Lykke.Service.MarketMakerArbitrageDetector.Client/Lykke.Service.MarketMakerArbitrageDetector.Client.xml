@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Lykke.Service.MarketMakerArbitrageDetector.Client</name>
+    </assembly>
+    <members>
+        <member name="T:Lykke.Service.MarketMakerArbitrageDetector.Client.AutofacExtension">
+            <summary>
+            Autofac extension for client registration.
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.MarketMakerArbitrageDetector.Client.AutofacExtension.RegisterMarketMakerArbitrageDetectorClient(Autofac.ContainerBuilder,Lykke.Service.MarketMakerArbitrageDetector.Client.MarketMakerArbitrageDetectorServiceClientSettings,System.Func{Lykke.HttpClientGenerator.HttpClientGeneratorBuilder,Lykke.HttpClientGenerator.HttpClientGeneratorBuilder})">
+            <summary>
+            Registers <see cref="T:Lykke.Service.MarketMakerArbitrageDetector.Client.IMarketMakerArbitrageDetectorClient"/> in Autofac container using <see cref="T:Lykke.Service.MarketMakerArbitrageDetector.Client.MarketMakerArbitrageDetectorServiceClientSettings"/>.
+            </summary>
+            <param name="builder">Autofac container builder.</param>
+            <param name="settings">MarketMakerArbitrageDetector client settings.</param>
+            <param name="builderConfigure">Optional <see cref="T:Lykke.HttpClientGenerator.HttpClientGeneratorBuilder"/> configure handler.</param>
+        </member>
+        <member name="T:Lykke.Service.MarketMakerArbitrageDetector.Client.IMarketMakerArbitrageDetectorApi">
+            <summary>
+            MarketMakerArbitrageDetector client API interface.
+            </summary>
+        </member>
+        <member name="T:Lykke.Service.MarketMakerArbitrageDetector.Client.IMarketMakerArbitrageDetectorClient">
+            <summary>
+            MarketMakerArbitrageDetector client interface.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.MarketMakerArbitrageDetector.Client.IMarketMakerArbitrageDetectorClient.Api">
+            <summary>Application Api interface</summary>
+        </member>
+        <member name="T:Lykke.Service.MarketMakerArbitrageDetector.Client.MarketMakerArbitrageDetectorClient">
+            <summary>
+            MarketMakerArbitrageDetector API aggregating interface.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.MarketMakerArbitrageDetector.Client.MarketMakerArbitrageDetectorClient.Api">
+            <summary>Inerface to MarketMakerArbitrageDetector Api.</summary>
+        </member>
+        <member name="M:Lykke.Service.MarketMakerArbitrageDetector.Client.MarketMakerArbitrageDetectorClient.#ctor(Lykke.HttpClientGenerator.IHttpClientGenerator)">
+            <summary>C-tor</summary>
+        </member>
+        <member name="T:Lykke.Service.MarketMakerArbitrageDetector.Client.MarketMakerArbitrageDetectorServiceClientSettings">
+            <summary>
+            MarketMakerArbitrageDetector client settings.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.MarketMakerArbitrageDetector.Client.MarketMakerArbitrageDetectorServiceClientSettings.ServiceUrl">
+            <summary>Service url.</summary>
+        </member>
+    </members>
+</doc>

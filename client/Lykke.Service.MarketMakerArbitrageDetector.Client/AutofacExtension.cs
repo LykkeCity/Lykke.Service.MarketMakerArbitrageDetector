@@ -6,6 +6,9 @@ using System;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector.Client
 {
+    /// <summary>
+    /// Autofac extension for client registration.
+    /// </summary>
     [PublicAPI]
     public static class AutofacExtension
     {
