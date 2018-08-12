@@ -60,3 +60,5 @@ node_modules
 **/appsettings.json
 **/appsettings.*.json
 **/*sonar*
+
+/client/**/*.xml
