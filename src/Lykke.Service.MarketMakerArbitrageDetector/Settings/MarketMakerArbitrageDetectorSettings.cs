@@ -1,5 +1,4 @@
 ﻿using JetBrains.Annotations;
-using Lykke.SettingsReader.Attributes;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector.Settings
 {
@@ -7,5 +6,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Settings
     public class MarketMakerArbitrageDetectorSettings
     {
         public DbSettings Db { get; set; }
+
+        public RabbitMqSettings RabbitMq { get; set; }
     }
 }

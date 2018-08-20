@@ -6,6 +6,10 @@
     <Version>1.0.0</Version>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Lykke.Job.OrderBooksCacheProvider.Client" Version="1.0.1" />
+    <PackageReference Include="Lykke.Service.Assets.Client" Version="4.4.0" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Lykke.Service.MarketMakerArbitrageDetector.Core\Lykke.Service.MarketMakerArbitrageDetector.Core.csproj" />
   </ItemGroup>
 </Project>
