@@ -68,11 +68,11 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Rabbit.Subscribers
             try
             {
                 var limitOrders = message.LimitOrders
-                    .Select(o => new OrderBookLimitOrder(o.Id, o.ClientId, Math.Abs(o.Volume), o.Price))
+                    .Select(o => new LimitOrder(o.Id, o.ClientId, Math.Abs(o.Volume), o.Price))
                     .ToList();
 
-                var buyLimitOrders = new List<OrderBookLimitOrder>();
-                var sellLimitOrders = new List<OrderBookLimitOrder>();
+                var buyLimitOrders = new List<LimitOrder>();
+                var sellLimitOrders = new List<LimitOrder>();
 
                 if (message.IsBuy)
                     buyLimitOrders = limitOrders;

@@ -156,15 +156,15 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
             if (orderBook == null)
                 return null;
 
-            var buyLimitOrders = new List<OrderBookLimitOrder>();
-            var sellLimitOrders = new List<OrderBookLimitOrder>();
+            var buyLimitOrders = new List<LimitOrder>();
+            var sellLimitOrders = new List<LimitOrder>();
 
             foreach (var limitOrder in orderBook.Prices)
             {
                 if (limitOrder.Volume > 0)
-                    buyLimitOrders.Add(new OrderBookLimitOrder(limitOrder.Id, limitOrder.ClientId, (decimal)limitOrder.Volume, (decimal)limitOrder.Price));
+                    buyLimitOrders.Add(new LimitOrder(limitOrder.Id, limitOrder.ClientId, (decimal)limitOrder.Volume, (decimal)limitOrder.Price));
                 else
-                    sellLimitOrders.Add(new OrderBookLimitOrder(limitOrder.Id, limitOrder.ClientId, Math.Abs((decimal)limitOrder.Volume), (decimal)limitOrder.Price));
+                    sellLimitOrders.Add(new LimitOrder(limitOrder.Id, limitOrder.ClientId, Math.Abs((decimal)limitOrder.Volume), (decimal)limitOrder.Price));
             }
 
             var result = new OrderBook(LykkeExchangeName, new AssetPair(orderBook.AssetPair), buyLimitOrders, sellLimitOrders, orderBook.Timestamp);

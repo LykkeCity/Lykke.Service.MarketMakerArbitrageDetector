@@ -27,7 +27,4 @@
     <PackageReference Include="Lykke.SettingsReader" Version="2.4.1" />
     <PackageReference Include="Refit" Version="4.6.16" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
 </Project>

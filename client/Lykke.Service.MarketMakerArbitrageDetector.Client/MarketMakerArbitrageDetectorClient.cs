@@ -1,4 +1,5 @@
 ﻿using Lykke.HttpClientGenerator;
+using Lykke.Service.MarketMakerArbitrageDetector.Client.Api;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector.Client
 {
@@ -7,15 +8,13 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Client
     /// </summary>
     public class MarketMakerArbitrageDetectorClient : IMarketMakerArbitrageDetectorClient
     {
-        // Note: Add similar Api properties for each new service controller
-
-        /// <summary>Inerface to MarketMakerArbitrageDetector Api.</summary>
-        public IMarketMakerArbitrageDetectorApi Api { get; private set; }
+        /// <inheritdoc />
+        public IOrderBooksApi OrderBooksApi { get; }
 
         /// <summary>C-tor</summary>
         public MarketMakerArbitrageDetectorClient(IHttpClientGenerator httpClientGenerator)
         {
-            Api = httpClientGenerator.Generate<IMarketMakerArbitrageDetectorApi>();
+            OrderBooksApi = httpClientGenerator.Generate<IOrderBooksApi>();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using JetBrains.Annotations;
+using Lykke.Service.MarketMakerArbitrageDetector.Client.Api;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector.Client
 {
@@ -8,7 +9,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Client
     [PublicAPI]
     public interface IMarketMakerArbitrageDetectorClient
     {
-        /// <summary>Application Api interface</summary>
-        IMarketMakerArbitrageDetectorApi Api { get; }
+        /// <summary>Order books API interface</summary>
+        IOrderBooksApi OrderBooksApi { get; }
     }
 }

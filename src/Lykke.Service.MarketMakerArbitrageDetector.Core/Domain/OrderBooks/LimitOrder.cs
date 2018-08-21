@@ -1,6 +1,6 @@
 ﻿namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain.OrderBooks
 {
-    public class OrderBookLimitOrder
+    public class LimitOrder
     {
         public string OrderId { get; }
 
@@ -10,7 +10,7 @@
 
         public decimal Price { get; }
 
-        public OrderBookLimitOrder(string orderId, string clientId, decimal volume, decimal price)
+        public LimitOrder(string orderId, string clientId, decimal volume, decimal price)
         {
             OrderId = orderId;
             ClientId = clientId;
