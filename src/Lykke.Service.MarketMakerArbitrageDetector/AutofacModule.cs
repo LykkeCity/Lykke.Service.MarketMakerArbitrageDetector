@@ -5,7 +5,7 @@ using Lykke.Job.OrderBooksCacheProvider.Client;
 using Lykke.Sdk;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.MarketMakerArbitrageDetector.Managers;
-using Lykke.Service.MarketMakerArbitrageDetector.Rabbit.Subscribers;
+using Lykke.Service.MarketMakerArbitrageDetector.RabbitMQ.Subscribers;
 using Lykke.Service.MarketMakerArbitrageDetector.Settings;
 using Lykke.SettingsReader;
 

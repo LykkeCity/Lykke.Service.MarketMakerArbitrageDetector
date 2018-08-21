@@ -9,5 +9,10 @@
         public decimal Volume { get; set; }
 
         public decimal Price { get; set; }
+
+        public override string ToString()
+        {
+            return $"Price: {Price}, Volume: {Volume}, OrderId: {OrderId}, ClientId: {ClientId}";
+        }
     }
 }

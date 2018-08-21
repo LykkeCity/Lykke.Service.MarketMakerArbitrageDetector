@@ -21,8 +21,8 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                 .As<ISettingsService>()
                 .SingleInstance();
 
-            builder.RegisterType<LykkeOrderBookService>()
-                .As<ILykkeOrderBookService>()
+            builder.RegisterType<OrderBooksService>()
+                .As<IOrderBooksService>()
                 .As<ILykkeOrderBookHandler>()
                 .SingleInstance();
         }

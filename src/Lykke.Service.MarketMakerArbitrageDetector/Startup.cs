@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using AutoMapper;
-using Lykke.Service.MarketMakerArbitrageDetector.AzureRepositories;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector
 {
@@ -34,6 +33,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector
 
                 Mapper.Initialize(cfg =>
                 {
+                    cfg.AddProfiles(typeof(AzureRepositories.AutoMapperProfile));
                     cfg.AddProfiles(typeof(AutoMapperProfile));
                 });
                 Mapper.AssertConfigurationIsValid();

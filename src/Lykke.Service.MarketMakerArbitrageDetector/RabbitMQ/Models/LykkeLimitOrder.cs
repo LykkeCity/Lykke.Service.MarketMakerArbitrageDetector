@@ -1,4 +1,4 @@
-﻿namespace Lykke.Service.MarketMakerArbitrageDetector.Rabbit.Models
+﻿namespace Lykke.Service.MarketMakerArbitrageDetector.RabbitMQ.Models
 {
     public class LykkeLimitOrder
     {

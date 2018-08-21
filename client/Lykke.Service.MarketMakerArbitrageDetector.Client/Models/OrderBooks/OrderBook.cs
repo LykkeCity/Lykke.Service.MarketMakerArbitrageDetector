@@ -9,10 +9,15 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Client.Models.OrderBooks
 
         public AssetPair AssetPair { get; set; }
 
-        public IReadOnlyList<LimitOrder> SellLimitOrders { get; set; }
+        public IReadOnlyList<LimitOrder> Bids { get; set; }
 
-        public IReadOnlyList<LimitOrder> BuyLimitOrders { get; set; }
+        public IReadOnlyList<LimitOrder> Asks { get; set; }
 
         public DateTime Timestamp { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Exchange} - {AssetPair}, Bids: {Bids.Count}, Asks: {Asks.Count}, Timestamp: {Timestamp}";
+        }
     }
 }

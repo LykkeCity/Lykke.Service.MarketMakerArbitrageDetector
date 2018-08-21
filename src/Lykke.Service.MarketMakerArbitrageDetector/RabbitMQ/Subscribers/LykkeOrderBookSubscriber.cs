@@ -8,10 +8,10 @@ using Lykke.RabbitMqBroker;
 using Lykke.RabbitMqBroker.Subscriber;
 using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain.OrderBooks;
 using Lykke.Service.MarketMakerArbitrageDetector.Core.Handlers;
-using Lykke.Service.MarketMakerArbitrageDetector.Rabbit.Models;
+using Lykke.Service.MarketMakerArbitrageDetector.RabbitMQ.Models;
 using Lykke.Service.MarketMakerArbitrageDetector.Settings;
 
-namespace Lykke.Service.MarketMakerArbitrageDetector.Rabbit.Subscribers
+namespace Lykke.Service.MarketMakerArbitrageDetector.RabbitMQ.Subscribers
 {
     public class LykkeOrderBookSubscriber : IDisposable
     {
@@ -71,15 +71,15 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Rabbit.Subscribers
                     .Select(o => new LimitOrder(o.Id, o.ClientId, Math.Abs(o.Volume), o.Price))
                     .ToList();
 
-                var buyLimitOrders = new List<LimitOrder>();
-                var sellLimitOrders = new List<LimitOrder>();
+                var bids = new List<LimitOrder>();
+                var asks = new List<LimitOrder>();
 
                 if (message.IsBuy)
-                    buyLimitOrders = limitOrders;
+                    bids = limitOrders;
                 else
-                    sellLimitOrders = limitOrders;
+                    asks = limitOrders;
 
-                var lykkeOrderBook = new OrderBook(LykkeExchangeName, new AssetPair(message.AssetPairId), buyLimitOrders, sellLimitOrders, message.Timestamp);
+                var lykkeOrderBook = new OrderBook(LykkeExchangeName, new AssetPair(message.AssetPairId), bids, asks, message.Timestamp);
 
                 await Task.WhenAll(_lykkeOrderBookHandlers.Select(o => o.HandleAsync(lykkeOrderBook)));
             }

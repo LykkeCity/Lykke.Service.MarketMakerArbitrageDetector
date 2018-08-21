@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Lykke.Service.MarketMakerArbitrageDetector.Rabbit.Models
+namespace Lykke.Service.MarketMakerArbitrageDetector.RabbitMQ.Models
 {
     public class LykkeOrderBook
     {

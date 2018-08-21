@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Lykke.Sdk;
-using Lykke.Service.MarketMakerArbitrageDetector.Rabbit.Subscribers;
+using Lykke.Service.MarketMakerArbitrageDetector.RabbitMQ.Subscribers;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector.Managers
 {

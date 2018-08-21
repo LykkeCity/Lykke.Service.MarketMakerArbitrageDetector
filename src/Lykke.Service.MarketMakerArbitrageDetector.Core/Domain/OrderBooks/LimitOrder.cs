@@ -17,5 +17,10 @@
             Volume = volume;
             Price = price;
         }
+
+        public override string ToString()
+        {
+            return $"Price: {Price}, Volume: {Volume}, OrderId: {OrderId}, ClientId: {ClientId}";
+        }
     }
 }

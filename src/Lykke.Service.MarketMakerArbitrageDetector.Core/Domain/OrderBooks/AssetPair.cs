@@ -22,5 +22,10 @@
             Base = @base;
             Quote = quote;
         }
+
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 }

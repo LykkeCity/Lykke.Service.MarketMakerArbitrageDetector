@@ -18,7 +18,7 @@ using CacheProviderOrderBook = Lykke.Job.OrderBooksCacheProvider.Client.OrderBoo
 namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
 {
     [UsedImplicitly]
-    public class LykkeOrderBookService : ILykkeOrderBookService, ILykkeOrderBookHandler
+    public class OrderBooksService : IOrderBooksService, ILykkeOrderBookHandler
     {
         private const string LykkeExchangeName = "lykke";
 
@@ -34,7 +34,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
         private readonly Dictionary<string, OrderBook> _lykkeOrderBooks = new Dictionary<string, OrderBook>();
         private readonly Dictionary<string, OrderBook> _dirtyLykkeOrderBooks = new Dictionary<string, OrderBook>();
 
-        public LykkeOrderBookService(ISettingsService settingsService, IOrderBookProviderClient orderBookProviderClient, IAssetsService assetsService, ILogFactory logFactory)
+        public OrderBooksService(ISettingsService settingsService, IOrderBookProviderClient orderBookProviderClient, IAssetsService assetsService, ILogFactory logFactory)
         {
             _settingsService = settingsService;
             _orderBookProviderClient = orderBookProviderClient;
@@ -44,7 +44,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
             Initialize();
         }
 
-        public IReadOnlyList<OrderBook> GetAll()
+        public async Task<IReadOnlyList<OrderBook>> GetAllAsync()
         {
             lock (_sync)
             {
@@ -70,10 +70,10 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
                     // Update half even if it already exists
                     var dirtyOrderBook = _dirtyLykkeOrderBooks[orderBook.AssetPair.Id];
 
-                    var buyLimitOrders = orderBook.BuyLimitOrders ?? dirtyOrderBook.BuyLimitOrders;
-                    var sellLimitOrders = orderBook.SellLimitOrders ?? dirtyOrderBook.SellLimitOrders;
+                    var bids = orderBook.Bids ?? dirtyOrderBook.Bids;
+                    var asks = orderBook.Asks ?? dirtyOrderBook.Asks;
 
-                    var newDirtyOrderBook = new OrderBook(orderBook.Exchange, orderBook.AssetPair, buyLimitOrders, sellLimitOrders, orderBook.Timestamp);
+                    var newDirtyOrderBook = new OrderBook(orderBook.Exchange, orderBook.AssetPair, bids, asks, orderBook.Timestamp);
 
                     _dirtyLykkeOrderBooks.Remove(orderBook.AssetPair.Id);
                     _dirtyLykkeOrderBooks.Add(orderBook.AssetPair.Id, newDirtyOrderBook);
@@ -156,18 +156,18 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
             if (orderBook == null)
                 return null;
 
-            var buyLimitOrders = new List<LimitOrder>();
-            var sellLimitOrders = new List<LimitOrder>();
+            var bids = new List<LimitOrder>();
+            var asks = new List<LimitOrder>();
 
             foreach (var limitOrder in orderBook.Prices)
             {
                 if (limitOrder.Volume > 0)
-                    buyLimitOrders.Add(new LimitOrder(limitOrder.Id, limitOrder.ClientId, (decimal)limitOrder.Volume, (decimal)limitOrder.Price));
+                    bids.Add(new LimitOrder(limitOrder.Id, limitOrder.ClientId, (decimal)limitOrder.Volume, (decimal)limitOrder.Price));
                 else
-                    sellLimitOrders.Add(new LimitOrder(limitOrder.Id, limitOrder.ClientId, Math.Abs((decimal)limitOrder.Volume), (decimal)limitOrder.Price));
+                    asks.Add(new LimitOrder(limitOrder.Id, limitOrder.ClientId, Math.Abs((decimal)limitOrder.Volume), (decimal)limitOrder.Price));
             }
 
-            var result = new OrderBook(LykkeExchangeName, new AssetPair(orderBook.AssetPair), buyLimitOrders, sellLimitOrders, orderBook.Timestamp);
+            var result = new OrderBook(LykkeExchangeName, new AssetPair(orderBook.AssetPair), bids, asks, orderBook.Timestamp);
 
             return result;
         }
@@ -193,16 +193,16 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
                     // Update half only if it doesn't exist
                     var dirtyOrderBook = _dirtyLykkeOrderBooks[orderBook.AssetPair.Id];
 
-                    var hasToBeUpdated = dirtyOrderBook.BuyLimitOrders == null && orderBook.BuyLimitOrders != null ||
-                                         dirtyOrderBook.SellLimitOrders == null && orderBook.SellLimitOrders != null;
+                    var hasToBeUpdated = dirtyOrderBook.Bids == null && orderBook.Bids != null ||
+                                         dirtyOrderBook.Asks == null && orderBook.Asks != null;
 
                     if (!hasToBeUpdated)
                         return;
 
-                    var buyLimitOrders = dirtyOrderBook.BuyLimitOrders ?? orderBook.BuyLimitOrders;
-                    var sellLimitOrders = dirtyOrderBook.SellLimitOrders ?? orderBook.SellLimitOrders;
+                    var bids = dirtyOrderBook.Bids ?? orderBook.Bids;
+                    var asks = dirtyOrderBook.Asks ?? orderBook.Asks;
 
-                    var newDirtyOrderBook = new OrderBook(orderBook.Exchange, orderBook.AssetPair, buyLimitOrders, sellLimitOrders, orderBook.Timestamp);
+                    var newDirtyOrderBook = new OrderBook(orderBook.Exchange, orderBook.AssetPair, bids, asks, orderBook.Timestamp);
 
                     _dirtyLykkeOrderBooks.Remove(orderBook.AssetPair.Id);
                     _dirtyLykkeOrderBooks.Add(orderBook.AssetPair.Id, newDirtyOrderBook);
@@ -214,15 +214,15 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
 
         private void MoveFromDirtyToMain(OrderBook dirtyOrderBook)
         {
-            if (dirtyOrderBook.SellLimitOrders != null && dirtyOrderBook.BuyLimitOrders != null)
+            if (dirtyOrderBook.Asks != null && dirtyOrderBook.Bids != null)
             {
                 var isValid = true;
                 
                 // Only if both bids and asks not empty
-                if (dirtyOrderBook.SellLimitOrders.Any() && dirtyOrderBook.BuyLimitOrders.Any())
+                if (dirtyOrderBook.Asks.Any() && dirtyOrderBook.Bids.Any())
                 {
-                    isValid = dirtyOrderBook.SellLimitOrders.Min(o => o.Price) >
-                              dirtyOrderBook.BuyLimitOrders.Max(o => o.Price);
+                    isValid = dirtyOrderBook.Asks.Min(o => o.Price) >
+                              dirtyOrderBook.Bids.Max(o => o.Price);
                 }
 
                 if (isValid)
@@ -230,8 +230,8 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
                     _lykkeOrderBooks[dirtyOrderBook.AssetPair.Id] =
                         new OrderBook(dirtyOrderBook.Exchange,
                                       dirtyOrderBook.AssetPair,
-                                      dirtyOrderBook.BuyLimitOrders,
-                                      dirtyOrderBook.SellLimitOrders,
+                                      dirtyOrderBook.Bids,
+                                      dirtyOrderBook.Asks,
                                       dirtyOrderBook.Timestamp);
                 }
             }
