@@ -7,10 +7,11 @@ using JetBrains.Annotations;
 using Lykke.Common.Log;
 using Lykke.Job.OrderBooksCacheProvider.Client;
 using Lykke.Service.Assets.Client;
-using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain;
+using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain.OrderBooks;
 using Lykke.Service.MarketMakerArbitrageDetector.Core.Handlers;
 using Lykke.Service.MarketMakerArbitrageDetector.Core.Services;
-using OrderBook = Lykke.Service.MarketMakerArbitrageDetector.Core.Domain.OrderBook;
+using OrderBook = Lykke.Service.MarketMakerArbitrageDetector.Core.Domain.OrderBooks.OrderBook;
+using CacheProviderOrderBook = Lykke.Job.OrderBooksCacheProvider.Client.OrderBook;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
 {
@@ -18,18 +19,19 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
     public class LykkeOrderBookService : ILykkeOrderBookService, ILykkeOrderBookHandler
     {
         private const string LykkeExchangeName = "lykke";
+
+        private readonly ISettingsService _settingsService;
         private readonly IAssetsService _assetsService;
         private readonly IOrderBookProviderClient _orderBookProviderClient;
         private readonly ILog _log;
+
         private readonly object _sync = new object();
+        private readonly Dictionary<string, OrderBook> _lykkeOrderBooks = new Dictionary<string, OrderBook>();
+        private readonly Dictionary<string, OrderBook> _dirtyLykkeOrderBooks = new Dictionary<string, OrderBook>();
 
-        private readonly Dictionary<string, OrderBook> _lykkeOrderBooks =
-            new Dictionary<string, OrderBook>();
-        private readonly Dictionary<string, OrderBook> _dirtyLykkeOrderBooks =
-            new Dictionary<string, OrderBook>();
-
-        public LykkeOrderBookService(IOrderBookProviderClient orderBookProviderClient, IAssetsService assetsService, ILogFactory logFactory)
+        public LykkeOrderBookService(ISettingsService settingsService, IOrderBookProviderClient orderBookProviderClient, IAssetsService assetsService, ILogFactory logFactory)
         {
+            _settingsService = settingsService;
             _orderBookProviderClient = orderBookProviderClient;
             _assetsService = assetsService;
             _log = logFactory.CreateLog(this);
@@ -101,7 +103,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
             var foundOrderBooks = 0;
             foreach (var assetPair in assetPairs)
             {
-                Job.OrderBooksCacheProvider.Client.OrderBook providerOrderBook = null;
+                CacheProviderOrderBook providerOrderBook = null;
                 try
                 {
                     providerOrderBook = await _orderBookProviderClient.GetOrderBookAsync(assetPair.Id);
@@ -115,7 +117,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
             _log.Info($"Initialized from cache provider {foundOrderBooks} order books out of {assetPairs.Count}.");
         }
 
-        private OrderBook Convert(Job.OrderBooksCacheProvider.Client.OrderBook orderBook)
+        private OrderBook Convert(CacheProviderOrderBook orderBook)
         {
             if (orderBook == null)
                 return null;
@@ -149,7 +151,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
                 }
                 else
                 {
-                    // Update half only if it doesn't already exist
+                    // Update half only if it doesn't exist
                     var dirtyOrderBook = _dirtyLykkeOrderBooks[orderBook.AssetPair];
 
                     if (dirtyOrderBook.SellLimitOrders == null)
@@ -172,7 +174,8 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
             if (dirtyOrderBook.SellLimitOrders != null && dirtyOrderBook.BuyLimitOrders != null)
             {
                 var isValid = true;
-
+                
+                // Only if both bids and asks not empty
                 if (dirtyOrderBook.SellLimitOrders.Any() && dirtyOrderBook.BuyLimitOrders.Any())
                 {
                     isValid = dirtyOrderBook.SellLimitOrders.Min(o => o.Price) >

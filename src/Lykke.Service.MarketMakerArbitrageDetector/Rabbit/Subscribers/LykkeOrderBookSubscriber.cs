@@ -6,7 +6,7 @@ using Common.Log;
 using Lykke.Common.Log;
 using Lykke.RabbitMqBroker;
 using Lykke.RabbitMqBroker.Subscriber;
-using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain;
+using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain.OrderBooks;
 using Lykke.Service.MarketMakerArbitrageDetector.Core.Handlers;
 using Lykke.Service.MarketMakerArbitrageDetector.Rabbit.Models;
 using Lykke.Service.MarketMakerArbitrageDetector.Settings;

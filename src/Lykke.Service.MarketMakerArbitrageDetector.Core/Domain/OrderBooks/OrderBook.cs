@@ -1,8 +1,7 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 
-namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
+namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain.OrderBooks
 {
     public class OrderBook
     {

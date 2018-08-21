@@ -1,11 +1,11 @@
 ﻿using JetBrains.Annotations;
-using Lykke.Logs.Loggers.LykkeSlack;
 using Lykke.Sdk;
 using Lykke.Service.MarketMakerArbitrageDetector.Settings;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using System;
+using AutoMapper;
+using Lykke.Service.MarketMakerArbitrageDetector.AzureRepositories;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector
 {
@@ -31,6 +31,12 @@ namespace Lykke.Service.MarketMakerArbitrageDetector
                     logs.AzureTableConnectionStringResolver = settings =>
                         settings.MarketMakerArbitrageDetectorService.Db.LogsConnectionString;
                 };
+
+                Mapper.Initialize(cfg =>
+                {
+                    cfg.AddProfiles(typeof(AutoMapperProfile));
+                });
+                Mapper.AssertConfigurationIsValid();
             });
         }
 

@@ -1,7 +1,15 @@
-﻿namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
+﻿namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain.OrderBooks
 {
     public class OrderBookLimitOrder
     {
+        public string OrderId { get; set; }
+
+        public string ClientId { get; set; }
+
+        public decimal Volume { get; set; }
+
+        public decimal Price { get; set; }
+
         public OrderBookLimitOrder()
         {
         }
@@ -13,13 +21,5 @@
             Volume = volume;
             Price = price;
         }
-
-        public string OrderId { get; set; }
-
-        public string ClientId { get; set; }
-
-        public decimal Volume { get; set; }
-
-        public decimal Price { get; set; }
     }
 }

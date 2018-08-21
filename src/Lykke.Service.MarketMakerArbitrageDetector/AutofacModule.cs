@@ -23,6 +23,9 @@ namespace Lykke.Service.MarketMakerArbitrageDetector
 
         protected override void Load(ContainerBuilder builder)
         {
+            builder.RegisterModule(new AzureRepositories.AutofacModule(
+                _settings.Nested(o => o.MarketMakerArbitrageDetectorService.Db.DataConnectionString)));
+
             builder.RegisterModule(new Services.AutofacModule());
 
             builder.RegisterType<StartupManager>()

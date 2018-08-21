@@ -3,6 +3,7 @@ using JetBrains.Annotations;
 using Lykke.Service.MarketMakerArbitrageDetector.Core.Handlers;
 using Lykke.Service.MarketMakerArbitrageDetector.Core.Services;
 using Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks;
+using Lykke.Service.MarketMakerArbitrageDetector.Services.Settings;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector.Services
 {
@@ -16,6 +17,10 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
 
         private void RegisterOrderBooks(ContainerBuilder builder)
         {
+            builder.RegisterType<SettingsService>()
+                .As<ISettingsService>()
+                .SingleInstance();
+
             builder.RegisterType<LykkeOrderBookService>()
                 .As<ILykkeOrderBookService>()
                 .As<ILykkeOrderBookHandler>()
