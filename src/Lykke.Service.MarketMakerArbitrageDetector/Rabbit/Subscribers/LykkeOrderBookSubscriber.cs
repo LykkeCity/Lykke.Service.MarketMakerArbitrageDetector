@@ -79,7 +79,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Rabbit.Subscribers
                 else
                     sellLimitOrders = limitOrders;
 
-                var lykkeOrderBook = new OrderBook(LykkeExchangeName, message.AssetPairId, buyLimitOrders, sellLimitOrders, message.Timestamp);
+                var lykkeOrderBook = new OrderBook(LykkeExchangeName, new AssetPair(message.AssetPairId), buyLimitOrders, sellLimitOrders, message.Timestamp);
 
                 await Task.WhenAll(_lykkeOrderBookHandlers.Select(o => o.HandleAsync(lykkeOrderBook)));
             }

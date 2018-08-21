@@ -2,17 +2,13 @@
 {
     public class OrderBookLimitOrder
     {
-        public string OrderId { get; set; }
+        public string OrderId { get; }
 
-        public string ClientId { get; set; }
+        public string ClientId { get; }
 
-        public decimal Volume { get; set; }
+        public decimal Volume { get; }
 
-        public decimal Price { get; set; }
-
-        public OrderBookLimitOrder()
-        {
-        }
+        public decimal Price { get; }
 
         public OrderBookLimitOrder(string orderId, string clientId, decimal volume, decimal price)
         {

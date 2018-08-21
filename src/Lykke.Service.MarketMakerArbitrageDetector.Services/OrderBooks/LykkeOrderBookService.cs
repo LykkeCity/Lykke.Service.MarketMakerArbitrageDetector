@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ using Lykke.Service.Assets.Client;
 using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain.OrderBooks;
 using Lykke.Service.MarketMakerArbitrageDetector.Core.Handlers;
 using Lykke.Service.MarketMakerArbitrageDetector.Core.Services;
+using MoreLinq;
 using OrderBook = Lykke.Service.MarketMakerArbitrageDetector.Core.Domain.OrderBooks.OrderBook;
 using CacheProviderOrderBook = Lykke.Job.OrderBooksCacheProvider.Client.OrderBook;
 
@@ -24,6 +26,9 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
         private readonly IAssetsService _assetsService;
         private readonly IOrderBookProviderClient _orderBookProviderClient;
         private readonly ILog _log;
+
+        private readonly ConcurrentDictionary<string, Asset> _assets = new ConcurrentDictionary<string, Asset>();
+        private readonly ConcurrentDictionary<string, AssetPair> _assetPairs = new ConcurrentDictionary<string, AssetPair>();
 
         private readonly object _sync = new object();
         private readonly Dictionary<string, OrderBook> _lykkeOrderBooks = new Dictionary<string, OrderBook>();
@@ -49,23 +54,29 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
 
         public Task HandleAsync(OrderBook orderBook)
         {
+            if (!_assetPairs.ContainsKey(orderBook.AssetPair.Id))
+                return Task.CompletedTask;
+
+            orderBook.SetAssetPair(_assetPairs[orderBook.AssetPair.Id]);
+
             lock (_sync)
             {
-                if (!_dirtyLykkeOrderBooks.ContainsKey(orderBook.AssetPair))
+                if (!_dirtyLykkeOrderBooks.ContainsKey(orderBook.AssetPair.Id))
                 {
-                    _dirtyLykkeOrderBooks.Add(orderBook.AssetPair, orderBook);
+                    _dirtyLykkeOrderBooks.Add(orderBook.AssetPair.Id, orderBook);
                 }
                 else
                 {
                     // Update half even if it already exists
-                    var dirtyOrderBook = _dirtyLykkeOrderBooks[orderBook.AssetPair];
-                    dirtyOrderBook.Timestamp = orderBook.Timestamp;
+                    var dirtyOrderBook = _dirtyLykkeOrderBooks[orderBook.AssetPair.Id];
 
-                    if (orderBook.SellLimitOrders != null)
-                        dirtyOrderBook.SellLimitOrders = orderBook.SellLimitOrders;
+                    var buyLimitOrders = orderBook.BuyLimitOrders ?? dirtyOrderBook.BuyLimitOrders;
+                    var sellLimitOrders = orderBook.SellLimitOrders ?? dirtyOrderBook.SellLimitOrders;
 
-                    if (orderBook.BuyLimitOrders != null)
-                        dirtyOrderBook.BuyLimitOrders = orderBook.BuyLimitOrders;
+                    var newDirtyOrderBook = new OrderBook(orderBook.Exchange, orderBook.AssetPair, buyLimitOrders, sellLimitOrders, orderBook.Timestamp);
+
+                    _dirtyLykkeOrderBooks.Remove(orderBook.AssetPair.Id);
+                    _dirtyLykkeOrderBooks.Add(orderBook.AssetPair.Id, newDirtyOrderBook);
 
                     MoveFromDirtyToMain(dirtyOrderBook);
                 }
@@ -76,6 +87,9 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
 
         private void Initialize()
         {
+            InitializeAssets();
+            InitializeAssetPairs();
+
             Task.Run(async () =>
             {
                 await InitializeOrderBooks();
@@ -87,18 +101,37 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
             });
         }
 
+        private void InitializeAssets()
+        {
+            var assets = _assetsService.AssetGetAll();
+            foreach (var asset in assets)
+            {
+                _assets[asset.Id] = new Asset(asset.Id, GetShortestName(asset.Id, asset.Name, asset.DisplayId));
+            }
+
+            _log.Info($"Initialized {_assets.Count} of {assets.Count} assets.");
+        }
+
+        private void InitializeAssetPairs()
+        {
+            var assetPairs = _assetsService.AssetPairGetAll();
+            foreach (var assetPair in assetPairs)
+            {
+                var baseAsset = _assets.Values.SingleOrDefault(x => x.Id == assetPair.BaseAssetId);
+                var quoteAsset = _assets.Values.SingleOrDefault(x => x.Id == assetPair.QuotingAssetId);
+
+                if (baseAsset == null || quoteAsset == null)
+                    continue;
+
+                _assetPairs[assetPair.Id] = new AssetPair(assetPair.Id, baseAsset.Name + quoteAsset.Name, baseAsset, quoteAsset);
+            }
+
+            _log.Info($"Initialized {_assetPairs.Count} of {assetPairs.Count} asset pairs.");
+        }
+
         private async Task InitializeOrderBooks()
         {
-            IList<Assets.Client.Models.AssetPair> assetPairs;
-            try
-            {
-                assetPairs = _assetsService.AssetPairGetAll();
-            }
-            catch (Exception ex)
-            {
-                _log.Warning("Can't receive asset pairs from the Lykke.Service.Assets.", ex);
-                return;
-            }
+            var assetPairs = _assetsService.AssetPairGetAll();
 
             var foundOrderBooks = 0;
             foreach (var assetPair in assetPairs)
@@ -114,7 +147,8 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
                 var orderBook = Convert(providerOrderBook);
                 AddOrderBookFromCacheProvider(orderBook);
             }
-            _log.Info($"Initialized from cache provider {foundOrderBooks} order books out of {assetPairs.Count}.");
+
+            _log.Info($"Initialized {foundOrderBooks} of {assetPairs.Count} order books. For now {_dirtyLykkeOrderBooks.Count} dirty and {_lykkeOrderBooks.Count} clean order books.");
         }
 
         private OrderBook Convert(CacheProviderOrderBook orderBook)
@@ -133,7 +167,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
                     sellLimitOrders.Add(new OrderBookLimitOrder(limitOrder.Id, limitOrder.ClientId, Math.Abs((decimal)limitOrder.Volume), (decimal)limitOrder.Price));
             }
 
-            var result = new OrderBook(LykkeExchangeName, orderBook.AssetPair, buyLimitOrders, sellLimitOrders, orderBook.Timestamp);
+            var result = new OrderBook(LykkeExchangeName, new AssetPair(orderBook.AssetPair), buyLimitOrders, sellLimitOrders, orderBook.Timestamp);
 
             return result;
         }
@@ -143,26 +177,35 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
             if (orderBook == null)
                 return;
 
+            if (!_assetPairs.ContainsKey(orderBook.AssetPair.Id))
+                return;
+
+            orderBook.SetAssetPair(_assetPairs[orderBook.AssetPair.Id]);
+
             lock (_sync)
             {
-                if (!_dirtyLykkeOrderBooks.ContainsKey(orderBook.AssetPair))
+                if (!_dirtyLykkeOrderBooks.ContainsKey(orderBook.AssetPair.Id))
                 {
-                    _dirtyLykkeOrderBooks.Add(orderBook.AssetPair, orderBook);
+                    _dirtyLykkeOrderBooks.Add(orderBook.AssetPair.Id, orderBook);
                 }
                 else
                 {
                     // Update half only if it doesn't exist
-                    var dirtyOrderBook = _dirtyLykkeOrderBooks[orderBook.AssetPair];
+                    var dirtyOrderBook = _dirtyLykkeOrderBooks[orderBook.AssetPair.Id];
 
-                    if (dirtyOrderBook.SellLimitOrders == null)
-                        dirtyOrderBook.SellLimitOrders = orderBook.SellLimitOrders;
+                    var hasToBeUpdated = dirtyOrderBook.BuyLimitOrders == null && orderBook.BuyLimitOrders != null ||
+                                         dirtyOrderBook.SellLimitOrders == null && orderBook.SellLimitOrders != null;
 
-                    if (dirtyOrderBook.BuyLimitOrders == null)
-                        dirtyOrderBook.BuyLimitOrders = orderBook.BuyLimitOrders;
+                    if (!hasToBeUpdated)
+                        return;
 
-                    var changed = dirtyOrderBook.SellLimitOrders == null || dirtyOrderBook.BuyLimitOrders == null;
-                    if (changed)
-                        dirtyOrderBook.Timestamp = orderBook.Timestamp;
+                    var buyLimitOrders = dirtyOrderBook.BuyLimitOrders ?? orderBook.BuyLimitOrders;
+                    var sellLimitOrders = dirtyOrderBook.SellLimitOrders ?? orderBook.SellLimitOrders;
+
+                    var newDirtyOrderBook = new OrderBook(orderBook.Exchange, orderBook.AssetPair, buyLimitOrders, sellLimitOrders, orderBook.Timestamp);
+
+                    _dirtyLykkeOrderBooks.Remove(orderBook.AssetPair.Id);
+                    _dirtyLykkeOrderBooks.Add(orderBook.AssetPair.Id, newDirtyOrderBook);
 
                     MoveFromDirtyToMain(dirtyOrderBook);
                 }
@@ -184,7 +227,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
 
                 if (isValid)
                 {
-                    _lykkeOrderBooks[dirtyOrderBook.AssetPair] =
+                    _lykkeOrderBooks[dirtyOrderBook.AssetPair.Id] =
                         new OrderBook(dirtyOrderBook.Exchange,
                                       dirtyOrderBook.AssetPair,
                                       dirtyOrderBook.BuyLimitOrders,
@@ -192,6 +235,12 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
                                       dirtyOrderBook.Timestamp);
                 }
             }
+        }
+
+        private string GetShortestName(string id, string name, string displayId)
+        {
+            var allNames = new List<string> { id, name, displayId };
+            return allNames.Where(x => x != null).MinBy(x => x.Length);
         }
     }
 }
