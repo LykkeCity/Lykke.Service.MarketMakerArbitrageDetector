@@ -5,8 +5,8 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain.Settings
 {
     public class Settings
     {
-        public Dictionary<string, string> Wallets = new Dictionary<string, string>();
+        public Dictionary<string, string> Wallets { get; set; } = new Dictionary<string, string>();
 
-        public TimeSpan ExecutionInterval = new TimeSpan(0, 0, 0, 2);
+        public TimeSpan ExecutionInterval { get; set; } = new TimeSpan(0, 0, 0, 2);
     }
 }

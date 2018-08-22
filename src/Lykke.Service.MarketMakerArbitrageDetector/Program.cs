@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector
 {
-    internal sealed class Program
+    internal static class Program
     {
         public static async Task Main(string[] args)
         {

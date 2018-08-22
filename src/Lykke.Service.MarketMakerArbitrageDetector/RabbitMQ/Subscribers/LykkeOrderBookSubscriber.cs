@@ -13,7 +13,7 @@ using Lykke.Service.MarketMakerArbitrageDetector.Settings;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector.RabbitMQ.Subscribers
 {
-    public class LykkeOrderBookSubscriber : IDisposable
+    public sealed class LykkeOrderBookSubscriber : IDisposable
     {
         private const string LykkeExchangeName = "lykke";
         private const string QueueSuffix = "MarketMakerArbitrageDetector";

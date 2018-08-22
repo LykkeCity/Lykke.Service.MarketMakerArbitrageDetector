@@ -21,8 +21,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
     public class OrderBooksService : IOrderBooksService, ILykkeOrderBookHandler
     {
         private const string LykkeExchangeName = "lykke";
-
-        private readonly ISettingsService _settingsService;
+        
         private readonly IAssetsService _assetsService;
         private readonly IOrderBookProviderClient _orderBookProviderClient;
         private readonly ILog _log;
@@ -34,9 +33,8 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
         private readonly Dictionary<string, OrderBook> _lykkeOrderBooks = new Dictionary<string, OrderBook>();
         private readonly Dictionary<string, OrderBook> _dirtyLykkeOrderBooks = new Dictionary<string, OrderBook>();
 
-        public OrderBooksService(ISettingsService settingsService, IOrderBookProviderClient orderBookProviderClient, IAssetsService assetsService, ILogFactory logFactory)
+        public OrderBooksService(IOrderBookProviderClient orderBookProviderClient, IAssetsService assetsService, ILogFactory logFactory)
         {
-            _settingsService = settingsService;
             _orderBookProviderClient = orderBookProviderClient;
             _assetsService = assetsService;
             _log = logFactory.CreateLog(this);
@@ -142,7 +140,10 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
                     providerOrderBook = await _orderBookProviderClient.GetOrderBookAsync(assetPair.Id);
                     foundOrderBooks++;
                 }
-                catch { }
+                catch (Exception)
+                {
+                    // Some order books can't be found by asset pair id
+                }
 
                 var orderBook = Convert(providerOrderBook);
                 AddOrderBookFromCacheProvider(orderBook);
