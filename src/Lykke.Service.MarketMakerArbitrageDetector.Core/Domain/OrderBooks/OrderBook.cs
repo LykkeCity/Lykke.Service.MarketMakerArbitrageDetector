@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using MoreLinq;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain.OrderBooks
 {
@@ -12,6 +14,14 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain.OrderBooks
         public IReadOnlyList<LimitOrder> Bids { get; }
 
         public IReadOnlyList<LimitOrder> Asks { get; }
+
+        public LimitOrder BestBid => Bids.Any() ? Bids.MaxBy(x => x.Price) : null;
+
+        public LimitOrder BestAsk => Asks.Any() ? Asks.MinBy(x => x.Price) : null;
+
+        public decimal BidsVolume => Bids.Sum(x => x.Volume);
+
+        public decimal AsksVolume => Asks.Sum(x => x.Volume);
 
         public DateTime Timestamp { get; }
 
@@ -31,7 +41,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain.OrderBooks
 
         public override string ToString()
         {
-            return $"{Exchange} - {AssetPair}, Bids: {Bids.Count}, Asks: {Asks.Count}, Timestamp: {Timestamp}";
+            return $"{Exchange} - {AssetPair}, BestBid: {BestBid:0.#####}, BestAsk: {BestAsk:0.#####}, Bids: {Bids.Count}, Asks: {Asks.Count}, Timestamp: {Timestamp}";
         }
     }
 }
