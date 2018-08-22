@@ -5,4 +5,9 @@
     <RootNamespace>Lykke.Service.MarketMakerArbitrageDetector.Core</RootNamespace>
     <Version>1.0.0</Version>
   </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="MoreLinq">
+      <HintPath>C:\Users\Alexey\.nuget\packages\morelinq\2.8.0\lib\netstandard2.0\MoreLinq.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 </Project>
