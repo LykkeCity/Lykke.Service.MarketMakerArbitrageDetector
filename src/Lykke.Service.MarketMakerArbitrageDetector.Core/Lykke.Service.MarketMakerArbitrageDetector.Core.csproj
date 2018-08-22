@@ -5,7 +5,4 @@
     <RootNamespace>Lykke.Service.MarketMakerArbitrageDetector.Core</RootNamespace>
     <Version>1.0.0</Version>
   </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Lykke.Common" Version="7.0.2" />
-  </ItemGroup>
 </Project>
