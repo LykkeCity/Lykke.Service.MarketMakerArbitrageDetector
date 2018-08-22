@@ -131,7 +131,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
 
         private async Task InitializeOrderBooks()
         {
-            var assetPairs = _assetsService.AssetPairGetAll();
+            var assetPairs = _assetPairs.Values.ToList();
 
             var foundOrderBooks = 0;
             foreach (var assetPair in assetPairs)
