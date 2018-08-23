@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain.OrderBooks;
+using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Handlers
 {

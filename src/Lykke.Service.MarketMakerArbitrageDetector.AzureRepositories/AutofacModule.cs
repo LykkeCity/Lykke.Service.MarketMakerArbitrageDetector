@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 using Lykke.Common.Log;
 using Lykke.Service.MarketMakerArbitrageDetector.AzureRepositories.Entities;
 using Lykke.Service.MarketMakerArbitrageDetector.AzureRepositories.Repositories;
-using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain.Settings;
+using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain;
 using Lykke.Service.MarketMakerArbitrageDetector.Core.Repositories;
 using Lykke.SettingsReader;
 

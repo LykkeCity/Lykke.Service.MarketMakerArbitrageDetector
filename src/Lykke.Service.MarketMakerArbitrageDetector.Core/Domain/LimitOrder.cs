@@ -1,4 +1,4 @@
-﻿namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain.OrderBooks
+﻿namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 {
     public class LimitOrder
     {
@@ -6,16 +6,21 @@
 
         public string ClientId { get; }
 
-        public decimal Volume { get; }
-
         public decimal Price { get; }
 
-        public LimitOrder(string orderId, string clientId, decimal volume, decimal price)
+        public decimal Volume { get; }
+
+        public LimitOrder(string orderId, string clientId, decimal price, decimal volume)
         {
             OrderId = orderId;
             ClientId = clientId;
             Volume = volume;
             Price = price;
+        }
+
+        public LimitOrder Reciprocal()
+        {
+            return new LimitOrder(OrderId, ClientId, 1 / Price, Volume * Price);
         }
 
         public override string ToString()

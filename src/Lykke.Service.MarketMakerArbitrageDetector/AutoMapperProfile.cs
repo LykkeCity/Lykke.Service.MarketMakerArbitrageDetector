@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Lykke.Service.MarketMakerArbitrageDetector.Client.Models.OrderBooks;
+using Lykke.Service.MarketMakerArbitrageDetector.Client.Models;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector
 {
@@ -7,8 +7,8 @@ namespace Lykke.Service.MarketMakerArbitrageDetector
     {
         public AutoMapperProfile()
         {
-            CreateMap<OrderBook, Core.Domain.OrderBooks.OrderBook>();
-            CreateMap<Core.Domain.OrderBooks.OrderBook, OrderBook>();
+            CreateMap<Core.Domain.OrderBook, OrderBook>();
+            CreateMap<Core.Domain.Arbitrage, Arbitrage>();
         }
     }
 }

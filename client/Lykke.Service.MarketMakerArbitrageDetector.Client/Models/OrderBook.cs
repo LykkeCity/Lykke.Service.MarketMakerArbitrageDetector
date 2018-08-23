@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MoreLinq;
 
-namespace Lykke.Service.MarketMakerArbitrageDetector.Client.Models.OrderBooks
+namespace Lykke.Service.MarketMakerArbitrageDetector.Client.Models
 {
     public class OrderBook
     {
@@ -27,7 +27,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Client.Models.OrderBooks
 
         public override string ToString()
         {
-            return $"{Exchange} - {AssetPair}, BestBid: {BestBid:0.#####}, BestAsk: {BestAsk:0.#####}, Bids: {Bids.Count}, Asks: {Asks.Count}, Timestamp: {Timestamp}";
+            return $"{Exchange} - {AssetPair}, Bids: {Bids.Count}, Asks: {Asks.Count}, BestBid: {BestBid?.Price:0.#####}, BestAsk: {BestAsk?.Price:0.#####}, Timestamp: {Timestamp}";
         }
     }
 }

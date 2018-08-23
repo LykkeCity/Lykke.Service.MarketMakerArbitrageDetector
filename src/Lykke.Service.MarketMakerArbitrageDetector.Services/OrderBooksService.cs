@@ -8,14 +8,14 @@ using JetBrains.Annotations;
 using Lykke.Common.Log;
 using Lykke.Job.OrderBooksCacheProvider.Client;
 using Lykke.Service.Assets.Client;
-using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain.OrderBooks;
+using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain;
 using Lykke.Service.MarketMakerArbitrageDetector.Core.Handlers;
 using Lykke.Service.MarketMakerArbitrageDetector.Core.Services;
 using MoreLinq;
-using OrderBook = Lykke.Service.MarketMakerArbitrageDetector.Core.Domain.OrderBooks.OrderBook;
+using OrderBook = Lykke.Service.MarketMakerArbitrageDetector.Core.Domain.OrderBook;
 using CacheProviderOrderBook = Lykke.Job.OrderBooksCacheProvider.Client.OrderBook;
 
-namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
+namespace Lykke.Service.MarketMakerArbitrageDetector.Services
 {
     [UsedImplicitly]
     public class OrderBooksService : IOrderBooksService, ILykkeOrderBookHandler
@@ -42,7 +42,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
             Initialize();
         }
 
-        public async Task<IReadOnlyList<OrderBook>> GetAllAsync()
+        public IReadOnlyCollection<OrderBook> GetAll()
         {
             lock (_sync)
             {
@@ -81,6 +81,49 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
             }
 
             return Task.CompletedTask;
+        }
+
+        public decimal? ConvertToUsd(string sourceAssetId)
+        {
+            if (string.IsNullOrWhiteSpace(sourceAssetId))
+                throw new ArgumentException(nameof(sourceAssetId));
+
+            var usd = _assets.Values.Single(x => x.Id == "USD");
+            var asset = _assets.Values.Single(x => x.Id == sourceAssetId);
+            
+            if (sourceAssetId == usd.Id)
+                return 1;
+
+            var temp = _assetPairs.Values.Where(x => x.Base.Id == asset.Id && x.Quote.Id == usd.Id).ToList();
+
+            // Get with the shortest id because it can be EURUSD and EURUSD.CY
+            var assetPair = _assetPairs.Values.Where(x => x.Base.Id == asset.Id && x.Quote.Id == usd.Id).OrderBy(x => x.Id).FirstOrDefault();
+            if (assetPair != null)
+            {
+                lock (_sync)
+                {
+                    if (!_lykkeOrderBooks.ContainsKey(assetPair.Id))
+                        return null;
+
+                    var orderBook = _lykkeOrderBooks[assetPair.Id];
+                    return orderBook.BestAsk?.Price;
+                }
+            }
+
+            temp = _assetPairs.Values.Where(x => x.Base.Id == usd.Id && x.Quote.Id == asset.Id).ToList();
+
+            assetPair = _assetPairs.Values.Where(x => x.Base.Id == usd.Id && x.Quote.Id == asset.Id).OrderBy(x => x.Id).FirstOrDefault();
+            if (assetPair == null)
+                return null;
+
+            lock (_sync)
+            {
+                if (!_lykkeOrderBooks.ContainsKey(assetPair.Id))
+                    return null;
+
+                var orderBook = _lykkeOrderBooks[assetPair.Id];
+                return orderBook.BestBid?.Reciprocal().Price;
+            }
         }
 
         private void Initialize()
@@ -163,9 +206,9 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services.OrderBooks
             foreach (var limitOrder in orderBook.Prices)
             {
                 if (limitOrder.Volume > 0)
-                    bids.Add(new LimitOrder(limitOrder.Id, limitOrder.ClientId, (decimal)limitOrder.Volume, (decimal)limitOrder.Price));
+                    bids.Add(new LimitOrder(limitOrder.Id, limitOrder.ClientId, (decimal)limitOrder.Price, (decimal)limitOrder.Volume));
                 else
-                    asks.Add(new LimitOrder(limitOrder.Id, limitOrder.ClientId, Math.Abs((decimal)limitOrder.Volume), (decimal)limitOrder.Price));
+                    asks.Add(new LimitOrder(limitOrder.Id, limitOrder.ClientId, (decimal)limitOrder.Price, Math.Abs((decimal)limitOrder.Volume)));
             }
 
             var result = new OrderBook(LykkeExchangeName, new AssetPair(orderBook.AssetPair), bids, asks, orderBook.Timestamp);

@@ -1,23 +1,26 @@
 ﻿using System.Threading.Tasks;
-using JetBrains.Annotations;
+using Autofac;
 using Lykke.Sdk;
+using Lykke.Service.MarketMakerArbitrageDetector.Core.Services;
 using Lykke.Service.MarketMakerArbitrageDetector.RabbitMQ.Subscribers;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector.Managers
 {
-    [UsedImplicitly]
     public class StartupManager : IStartupManager
     {
         private readonly LykkeOrderBookSubscriber _lykkeOrderBookSubscriber;
+        private readonly IArbitrageDetectorService _arbitrageDetectorService;
 
-        public StartupManager(LykkeOrderBookSubscriber lykkeOrderBookSubscriber)
+        public StartupManager(LykkeOrderBookSubscriber lykkeOrderBookSubscriber, IArbitrageDetectorService arbitrageDetectorService)
         {
             _lykkeOrderBookSubscriber = lykkeOrderBookSubscriber;
+            _arbitrageDetectorService = arbitrageDetectorService;
         }
 
         public Task StartAsync()
         {
             _lykkeOrderBookSubscriber.Start();
+            ((IStartable)_arbitrageDetectorService).Start();
 
             return Task.CompletedTask;
         }

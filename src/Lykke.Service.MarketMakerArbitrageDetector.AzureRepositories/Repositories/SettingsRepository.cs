@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
 using AutoMapper;
 using AzureStorage;
-using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain.Settings;
-using Lykke.Service.MarketMakerArbitrageDetector.Core.Repositories;
 using Lykke.Service.MarketMakerArbitrageDetector.AzureRepositories.Entities;
+using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain;
+using Lykke.Service.MarketMakerArbitrageDetector.Core.Repositories;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector.AzureRepositories.Repositories
 {

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using AutoMapper;
+using Lykke.Common.Api.Contract.Responses;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector
 {
@@ -46,6 +47,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector
             app.UseLykkeConfiguration(options =>
             {
                 options.SwaggerOptions = _swaggerOptions;
+                options.DefaultErrorHandler = exception => ErrorResponse.Create(exception.Message);
             });
         }
     }

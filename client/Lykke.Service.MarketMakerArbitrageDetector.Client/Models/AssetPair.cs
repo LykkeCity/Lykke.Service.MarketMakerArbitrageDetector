@@ -1,4 +1,4 @@
-﻿namespace Lykke.Service.MarketMakerArbitrageDetector.Client.Models.OrderBooks
+﻿namespace Lykke.Service.MarketMakerArbitrageDetector.Client.Models
 {
     public class AssetPair
     {
@@ -12,7 +12,7 @@
 
         public override string ToString()
         {
-            return Name;
+            return $"{Base.Name}/{Quote.Name}";
         }
     }
 }

@@ -4,9 +4,9 @@ using Refit;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector.Client.Api
 {
-    public interface IOrderBooksApi
+    public interface IArbitragesApi
     {
-        [Get("/api/orderBooks")]
-        IReadOnlyCollection<OrderBook> GetAll();
+        [Get("/api/arbitrages")]
+        IReadOnlyCollection<Arbitrage> GetAll();
     }
 }

@@ -3,18 +3,15 @@ using Lykke.Service.MarketMakerArbitrageDetector.Client.Api;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector.Client
 {
-    /// <summary>
-    /// MarketMakerArbitrageDetector API aggregating interface.
-    /// </summary>
     public class MarketMakerArbitrageDetectorClient : IMarketMakerArbitrageDetectorClient
     {
-        /// <inheritdoc />
-        public IOrderBooksApi OrderBooksApi { get; }
+        public IOrderBooksApi OrderBooks { get; }
+        public IArbitragesApi Arbitrages { get; }
 
-        /// <summary>C-tor</summary>
         public MarketMakerArbitrageDetectorClient(IHttpClientGenerator httpClientGenerator)
         {
-            OrderBooksApi = httpClientGenerator.Generate<IOrderBooksApi>();
+            OrderBooks = httpClientGenerator.Generate<IOrderBooksApi>();
+            Arbitrages = httpClientGenerator.Generate<IArbitragesApi>();
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain.Settings
+namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 {
     public class Settings
     {

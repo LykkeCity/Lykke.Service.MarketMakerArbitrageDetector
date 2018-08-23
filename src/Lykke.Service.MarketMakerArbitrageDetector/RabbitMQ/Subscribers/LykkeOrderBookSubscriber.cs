@@ -6,7 +6,7 @@ using Common.Log;
 using Lykke.Common.Log;
 using Lykke.RabbitMqBroker;
 using Lykke.RabbitMqBroker.Subscriber;
-using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain.OrderBooks;
+using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain;
 using Lykke.Service.MarketMakerArbitrageDetector.Core.Handlers;
 using Lykke.Service.MarketMakerArbitrageDetector.RabbitMQ.Models;
 using Lykke.Service.MarketMakerArbitrageDetector.Settings;
@@ -68,7 +68,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.RabbitMQ.Subscribers
             try
             {
                 var limitOrders = message.LimitOrders
-                    .Select(o => new LimitOrder(o.Id, o.ClientId, Math.Abs(o.Volume), o.Price))
+                    .Select(o => new LimitOrder(o.Id, o.ClientId, o.Price, Math.Abs(o.Volume)))
                     .ToList();
 
                 var bids = new List<LimitOrder>();

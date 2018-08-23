@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using JetBrains.Annotations;
 using Lykke.Service.MarketMakerArbitrageDetector.AzureRepositories.Entities;
-using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain.Settings;
+using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector.AzureRepositories
 {

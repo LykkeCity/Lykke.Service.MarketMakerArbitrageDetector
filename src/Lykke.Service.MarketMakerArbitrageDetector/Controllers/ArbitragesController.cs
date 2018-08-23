@@ -1,0 +1,30 @@
+﻿using System.Collections.Generic;
+using System.Net;
+using AutoMapper;
+using Lykke.Service.MarketMakerArbitrageDetector.Client.Api;
+using Lykke.Service.MarketMakerArbitrageDetector.Client.Models;
+using Lykke.Service.MarketMakerArbitrageDetector.Core.Services;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Lykke.Service.MarketMakerArbitrageDetector.Controllers
+{
+    [Route("/api/[controller]")]
+    public class ArbitragesController : Controller, IArbitragesApi
+    {
+        private readonly IArbitrageDetectorService _arbitrageDetectorService;
+
+        public ArbitragesController(IArbitrageDetectorService arbitrageDetectorService)
+        {
+            _arbitrageDetectorService = arbitrageDetectorService;
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(IReadOnlyList<Arbitrage>), (int)HttpStatusCode.OK)]
+        public IReadOnlyCollection<Arbitrage> GetAll()
+        {
+            var domain = _arbitrageDetectorService.GetAll();
+            var model = Mapper.Map<List<Arbitrage>>(domain);
+            return model;
+        }
+    }
+}
