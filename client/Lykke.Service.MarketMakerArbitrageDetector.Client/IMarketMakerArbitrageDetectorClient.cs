@@ -9,5 +9,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Client
         IOrderBooksApi OrderBooks { get; }
 
         IArbitragesApi Arbitrages { get; }
+
+        ISettingsApi Settings { get; }
     }
 }

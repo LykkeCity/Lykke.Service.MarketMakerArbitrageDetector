@@ -1,6 +1,4 @@
-﻿
-using System.Threading.Tasks;
-using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain;
+﻿using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain;
 using Lykke.Service.MarketMakerArbitrageDetector.Core.Repositories;
 using Lykke.Service.MarketMakerArbitrageDetector.Core.Services;
 
@@ -23,6 +21,9 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
             {
                 if (_settings == null)
                     _settings = _settingsRepository.GetAsync().GetAwaiter().GetResult();
+
+                if (_settings == null)
+                    _settingsRepository.InsertOrReplaceAsync(new Settings()).GetAwaiter().GetResult();
 
                 return _settings;
             }

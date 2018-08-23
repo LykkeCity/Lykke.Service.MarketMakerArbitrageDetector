@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Net;
+using System.Threading.Tasks;
 using AutoMapper;
 using Lykke.Service.MarketMakerArbitrageDetector.Client.Api;
 using Lykke.Service.MarketMakerArbitrageDetector.Client.Models;
@@ -20,11 +21,11 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(IReadOnlyList<OrderBook>), (int)HttpStatusCode.OK)]
-        public IReadOnlyCollection<OrderBook> GetAll()
+        public Task<IReadOnlyCollection<OrderBook>> GetAllAsync()
         {
             var domain = _orderBooksService.GetAll();
             var model = Mapper.Map<List<OrderBook>>(domain);
-            return model;
+            return Task.FromResult((IReadOnlyCollection<OrderBook>)model);
         }
     }
 }

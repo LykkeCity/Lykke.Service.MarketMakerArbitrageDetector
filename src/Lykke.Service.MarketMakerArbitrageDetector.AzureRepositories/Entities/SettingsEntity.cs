@@ -11,6 +11,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.AzureRepositories.Entities
     [ValueTypeMergingStrategy(ValueTypeMergingStrategy.UpdateIfDirty)]
     public class SettingsEntity : AzureTableEntity
     {
+        [JsonValueSerializer]
         public Dictionary<string, string> Wallets { get; set; } = new Dictionary<string, string>();
 
         public TimeSpan ExecutionInterval { get; set; }

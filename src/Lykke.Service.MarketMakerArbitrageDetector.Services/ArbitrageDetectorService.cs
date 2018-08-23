@@ -15,23 +15,22 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
 {
     public class ArbitrageDetectorService : IArbitrageDetectorService, IStartable, IStopable
     {
-        private static readonly TimeSpan DefaultInterval = new TimeSpan(0, 0, 0, 2);
-        
         private readonly object _sync = new object();
-        private readonly List<Arbitrage> _arbitrages;
+        private readonly List<Arbitrage> _arbitrages = new List<Arbitrage>();
 
+        private readonly ISettingsService _settingsService;
         private readonly IOrderBooksService _orderBooksService;
         private readonly TimerTrigger _trigger;
         private readonly ILog _log;
 
-        public ArbitrageDetectorService(IOrderBooksService orderBooksService, ILogFactory logFactory)
+        public ArbitrageDetectorService(ISettingsService settingsService, IOrderBooksService orderBooksService, ILogFactory logFactory)
         {
-            _arbitrages = new List<Arbitrage>();
-            
+            _settingsService = settingsService;
             _orderBooksService = orderBooksService ?? throw new ArgumentNullException(nameof(orderBooksService));
             _log = logFactory.CreateLog(this);
 
-            _trigger = new TimerTrigger(nameof(ArbitrageDetectorService), DefaultInterval, logFactory, Execute);
+            var executionInterval = _settingsService.Get().ExecutionInterval;
+            _trigger = new TimerTrigger(nameof(ArbitrageDetectorService), executionInterval, logFactory, Execute);
         }
 
         public IReadOnlyCollection<Arbitrage> GetAll()

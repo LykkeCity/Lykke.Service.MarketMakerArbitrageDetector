@@ -7,6 +7,8 @@ namespace Lykke.Service.MarketMakerArbitrageDetector
     {
         public AutoMapperProfile()
         {
+            CreateMap<Client.Models.Settings, Core.Domain.Settings>();
+            CreateMap<Core.Domain.Settings, Client.Models.Settings>();
             CreateMap<Core.Domain.OrderBook, OrderBook>();
             CreateMap<Core.Domain.Arbitrage, Arbitrage>();
         }
