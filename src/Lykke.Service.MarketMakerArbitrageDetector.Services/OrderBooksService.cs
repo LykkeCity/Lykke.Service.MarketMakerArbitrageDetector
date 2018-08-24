@@ -46,7 +46,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
         {
             lock (_sync)
             {
-                return _lykkeOrderBooks.Values.ToList();
+                return _lykkeOrderBooks.Values.OrderBy(x => x.AssetPair.Name).ToList();
             }
         }
 
