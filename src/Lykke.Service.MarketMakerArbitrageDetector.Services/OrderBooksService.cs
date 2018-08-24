@@ -75,9 +75,9 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
 
                     _dirtyLykkeOrderBooks.Remove(orderBook.AssetPair.Id);
                     _dirtyLykkeOrderBooks.Add(orderBook.AssetPair.Id, newDirtyOrderBook);
-
-                    MoveFromDirtyToMain(dirtyOrderBook);
                 }
+
+                MoveFromDirtyToMain(orderBook.AssetPair.Id);
             }
 
             return Task.CompletedTask;
@@ -188,6 +188,9 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                     // Some order books can't be found by asset pair id
                 }
 
+                if (providerOrderBook == null)
+                    continue;
+
                 var orderBook = Convert(providerOrderBook);
                 AddOrderBookFromCacheProvider(orderBook);
             }
@@ -197,9 +200,6 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
 
         private OrderBook Convert(CacheProviderOrderBook orderBook)
         {
-            if (orderBook == null)
-                return null;
-
             var bids = new List<LimitOrder>();
             var asks = new List<LimitOrder>();
 
@@ -218,9 +218,6 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
 
         private void AddOrderBookFromCacheProvider(OrderBook orderBook)
         {
-            if (orderBook == null)
-                return;
-
             if (!_assetPairs.ContainsKey(orderBook.AssetPair.Id))
                 return;
 
@@ -250,14 +247,16 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
 
                     _dirtyLykkeOrderBooks.Remove(orderBook.AssetPair.Id);
                     _dirtyLykkeOrderBooks.Add(orderBook.AssetPair.Id, newDirtyOrderBook);
-
-                    MoveFromDirtyToMain(dirtyOrderBook);
                 }
+
+                MoveFromDirtyToMain(orderBook.AssetPair.Id);
             }
         }
 
-        private void MoveFromDirtyToMain(OrderBook dirtyOrderBook)
+        private void MoveFromDirtyToMain(string assetPairId)
         {
+            var dirtyOrderBook = _dirtyLykkeOrderBooks[assetPairId];
+
             if (dirtyOrderBook.Asks != null && dirtyOrderBook.Bids != null)
             {
                 var isValid = true;
