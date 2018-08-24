@@ -12,6 +12,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
         public Asset Base { get; }
 
         public Asset Quote { get; }
+        
 
         public AssetPair(string id)
         {
@@ -123,7 +124,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
         {
             unchecked
             {
-                return ((Base != null ? Base.GetHashCode() : 0) * 397) ^ (Quote != null ? Quote.GetHashCode() : 0);
+                return (Id != null ? Id.GetHashCode() : 0) * 397;
             }
         }
 
@@ -131,7 +132,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 
         public override string ToString()
         {
-            return $"{Base.Name}/{Quote.Name}";
+            return $"{Name}";
         }
     }
 }

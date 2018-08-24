@@ -37,11 +37,11 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
         {
             lock (_sync)
             {
-                return _arbitrages;
+                return _arbitrages.OrderByDescending(x => x.PnLInUsd).ToList();
             }
         }
 
-        public Task Execute(ITimerTrigger timer, TimerTriggeredHandlerArgs args, CancellationToken cancellationtoken)
+        public Task Execute(ITimerTrigger timer, TimerTriggeredHandlerArgs args, CancellationToken cancellationToken)
         {
             try
             {
@@ -57,7 +57,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
 
         private void Execute()
         {
-            var orderBooks = _orderBooksService.GetAll();
+            var orderBooks = GetOrderBooksWithWantedLimitOrders();
             var lykkeArbitrages = GetArbitrages(orderBooks);
             RefreshArbitrages(lykkeArbitrages);
         }
@@ -122,16 +122,24 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                         if (string.IsNullOrWhiteSpace(targetSide)) // no arbitrages
                             continue;
 
-                        var baseToUsdRate = _orderBooksService.ConvertToUsd(target.AssetPair.Base.Id);
-                        var quoteToUsdRate = _orderBooksService.ConvertToUsd(target.AssetPair.Quote.Id);
-                        var volumeInUsd = volume * baseToUsdRate;
-                        volumeInUsd = volumeInUsd.HasValue ? Math.Round(volumeInUsd.Value) : (decimal?)null;
-                        var pnLInUsd = pnL * quoteToUsdRate;
-                        pnLInUsd = pnLInUsd.HasValue ? Math.Round(pnLInUsd.Value) : (decimal?)null;
+                        var volumeInUsd = _orderBooksService.ConvertToUsd(target.AssetPair.Base.Id, volume);
+                        var pnLInUsd = _orderBooksService.ConvertToUsd(target.AssetPair.Quote.Id, pnL);
 
-                        var lykkeArbitrage = new Arbitrage(target.AssetPair, source.AssetPair, spread, targetSide, synthOrderBook.ConversionPath,
-                            volume, target.BestBid?.Price, target.BestAsk?.Price, synthOrderBook.BestBid?.Price, synthOrderBook.BestAsk?.Price, volumeInUsd,
-                            pnL, pnLInUsd);
+                        var lykkeArbitrage = new Arbitrage (
+                            target.AssetPair.Name,
+                            source.AssetPair.Name,
+                            spread,
+                            targetSide,
+                            synthOrderBook.ConversionPath,
+                            volume,
+                            volumeInUsd,
+                            pnL,
+                            pnLInUsd,
+                            target.BestBid?.Price,
+                            target.BestAsk?.Price,
+                            synthOrderBook.BestBid?.Price,
+                            synthOrderBook.BestAsk?.Price
+                        );
                         result.Add(lykkeArbitrage);
                     }
                 }
@@ -151,6 +159,31 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                 _arbitrages.Clear();
                 _arbitrages.AddRange(lykkeArbitrages);
             }
+        }
+
+        private IReadOnlyCollection<OrderBook> GetOrderBooksWithWantedLimitOrders()
+        {
+            var allOrderBooks = _orderBooksService.GetAll();
+
+            var wallets = _settingsService.Get().Wallets;
+            if (!wallets.Any())
+                return allOrderBooks;
+
+            var result = new List<OrderBook>();
+            
+            foreach (var orderBook in allOrderBooks)
+            {
+                var newBids = orderBook.Bids.Where(x => wallets.Keys.Contains(x.ClientId)).ToList();
+                var newAsks = orderBook.Asks.Where(x => wallets.Keys.Contains(x.ClientId)).ToList();
+
+                if (!newBids.Any() && !newAsks.Any())
+                    continue;
+
+                var newOrderBook = new OrderBook(orderBook.Exchange, orderBook.AssetPair, newBids, newAsks, orderBook.Timestamp);
+                result.Add(newOrderBook);
+            }
+
+            return result;
         }
 
         #region IStartable, IStopable

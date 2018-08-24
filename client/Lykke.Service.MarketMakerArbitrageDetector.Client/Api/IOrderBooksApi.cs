@@ -8,6 +8,9 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Client.Api
     public interface IOrderBooksApi
     {
         [Get("/api/orderBooks")]
-        Task<IReadOnlyCollection<OrderBook>> GetAllAsync();
+        Task<IReadOnlyCollection<OrderBookRow>> GetAllAsync();
+
+        [Get("/api/orderBooks/{assetPairId}")]
+        Task<OrderBook> GetAsync(string assetPairId);
     }
 }

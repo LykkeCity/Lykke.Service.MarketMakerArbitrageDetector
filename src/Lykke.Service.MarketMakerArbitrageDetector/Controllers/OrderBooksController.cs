@@ -6,6 +6,7 @@ using Lykke.Service.MarketMakerArbitrageDetector.Client.Api;
 using Lykke.Service.MarketMakerArbitrageDetector.Client.Models;
 using Lykke.Service.MarketMakerArbitrageDetector.Core.Services;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector.Controllers
 {
@@ -20,12 +21,25 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(IReadOnlyList<OrderBook>), (int)HttpStatusCode.OK)]
-        public Task<IReadOnlyCollection<OrderBook>> GetAllAsync()
+        [SwaggerOperation("OrderBooksGetAll")]
+        [ProducesResponseType(typeof(IReadOnlyList<OrderBookRow>), (int)HttpStatusCode.OK)]
+        public Task<IReadOnlyCollection<OrderBookRow>> GetAllAsync()
         {
-            var domain = _orderBooksService.GetAll();
-            var model = Mapper.Map<List<OrderBook>>(domain);
-            return Task.FromResult((IReadOnlyCollection<OrderBook>)model);
+            var domain = _orderBooksService.GetAllRows();
+            var model = Mapper.Map<List<OrderBookRow>>(domain);
+
+            return Task.FromResult((IReadOnlyCollection<OrderBookRow>)model);
+        }
+
+        [HttpGet("{assetPairId}")]
+        [SwaggerOperation("OrderBooksGet")]
+        [ProducesResponseType(typeof(OrderBook), (int)HttpStatusCode.OK)]
+        public Task<OrderBook> GetAsync(string assetPairId)
+        {
+            var domain = _orderBooksService.Get(assetPairId);
+            var model = Mapper.Map<OrderBook>(domain);
+
+            return Task.FromResult(model);
         }
     }
 }

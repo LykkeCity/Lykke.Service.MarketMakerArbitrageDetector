@@ -8,6 +8,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 
         public string Name { get; }
 
+
         public Asset(string id, string name)
         {
             Id = id;
@@ -43,7 +44,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
         {
             unchecked
             {
-                return ((Id != null ? Id.GetHashCode() : 0) * 397) ^ (Name != null ? Name.GetHashCode() : 0);
+                return (Id != null ? Id.GetHashCode() : 0) * 397;
             }
         }
 

@@ -25,10 +25,11 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 
         public DateTime Timestamp { get; }
 
+
         public OrderBook(string exchange, AssetPair assetPair, IReadOnlyCollection<LimitOrder> bids, IReadOnlyCollection<LimitOrder> asks, DateTime timestamp)
         {
-            Exchange = !string.IsNullOrWhiteSpace(exchange) ? exchange : throw new ArgumentException($"Argument '{nameof(exchange)}' is null or empty.");
-            AssetPair = assetPair != null ? assetPair : throw new ArgumentException($"Argument '{nameof(assetPair)}' is null or invalid.");
+            Exchange = exchange;
+            AssetPair = assetPair;
             Bids = bids;
             Asks = asks;
             Timestamp = timestamp;
@@ -41,18 +42,20 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 
         public OrderBook Reverse()
         {
-            var result = new OrderBook(Exchange, AssetPair.Reverse(),
-                Asks.Select(x => x.Reciprocal()).OrderByDescending(x => x.Price).ToList(),
+            var result = new OrderBook (
+                Exchange,
+                AssetPair.Reverse(),
                 Bids.Select(x => x.Reciprocal()).OrderByDescending(x => x.Price).ToList(),
-                Timestamp);
-            result.AssetPair = AssetPair.Reverse();
+                Asks.Select(x => x.Reciprocal()).OrderByDescending(x => x.Price).ToList(),
+                Timestamp
+            );
 
             return result;
         }
 
         public override string ToString()
         {
-            return $"{Exchange} - {AssetPair}, Bids: {Bids.Count}, Asks: {Asks.Count}, BestBid: {BestBid?.Price:0.#####}, BestAsk: {BestAsk?.Price:0.#####}, Timestamp: {Timestamp}";
+            return $"{Exchange} - {AssetPair}, Bids: {Bids.Count}, Asks: {Asks.Count}, BestBid: {BestBid?.Price}, BestAsk: {BestAsk?.Price}, Timestamp: {Timestamp}";
         }
     }
 }

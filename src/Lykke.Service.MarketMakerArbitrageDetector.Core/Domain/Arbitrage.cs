@@ -6,9 +6,9 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 {
     public class Arbitrage
     {
-        public AssetPair Target { get; }
+        public string Target { get; }
 
-        public AssetPair Source { get; }
+        public string Source { get; }
 
         public decimal Spread { get; }
 
@@ -24,41 +24,37 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 
         public decimal? PnLInUsd { get; }
 
-        public decimal? BaseAsk { get; }
+        public decimal? TargetAsk { get; }
 
-        public decimal? BaseBid { get; }
+        public decimal? TargetBid { get; }
 
         public decimal? SynthAsk { get; }
 
         public decimal? SynthBid { get; }
 
-        public Arbitrage(AssetPair baseAssetPair, AssetPair crossAssetPair, decimal spread, string baseSide,
-            string conversionPath, decimal volume, decimal? baseBid, decimal? baseAsk, decimal? synthBid, decimal? synthAsk, decimal? volumeInUsd,
-            decimal pnL, decimal? pnLInUsd)
+
+        public Arbitrage(string target, string source, decimal spread, string targetSide, string conversionPath,
+            decimal volume, decimal? volumeInUsd, decimal pnL, decimal? pnLInUsd, decimal? targetAsk, decimal? targetBid,
+            decimal? synthAsk, decimal? synthBid)
         {
-            Target = !baseAssetPair.IsValid() ? throw new ArgumentNullException(nameof(baseAssetPair)) : baseAssetPair;
-            Source = !crossAssetPair.IsValid() ? throw new ArgumentNullException(nameof(crossAssetPair)) : crossAssetPair;
+            Target = target;
+            Source = source;
             Spread = spread;
-            TargetSide = string.IsNullOrWhiteSpace(baseSide) ? throw new ArgumentNullException(nameof(baseSide)) : baseSide;
-            ConversionPath = string.IsNullOrWhiteSpace(conversionPath) ? throw new ArgumentNullException(nameof(conversionPath)) : conversionPath;
+            TargetSide = targetSide;
+            ConversionPath = conversionPath;
             Volume = volume;
-            BaseAsk = baseAsk;
-            BaseBid = baseBid;
-            SynthAsk = synthAsk;
-            SynthBid = synthBid;
             VolumeInUsd = volumeInUsd;
             PnL = pnL;
             PnLInUsd = pnLInUsd;
+            TargetAsk = targetAsk;
+            TargetBid = targetBid;
+            SynthAsk = synthAsk;
+            SynthBid = synthBid;
         }
 
         public static decimal GetSpread(decimal bidPrice, decimal askPrice)
         {
-            return (askPrice - bidPrice) / bidPrice * 100;
-        }
-
-        public static decimal GetPnL(decimal bidPrice, decimal askPrice, decimal volume)
-        {
-            return (bidPrice - askPrice) * volume;
+            return Math.Round((askPrice - bidPrice) / bidPrice * 100, 2);
         }
 
         public static (decimal? Volume, decimal? PnL)? GetArbitrageVolumePnL(IReadOnlyCollection<LimitOrder> bids, IReadOnlyCollection<LimitOrder> asks)
@@ -100,7 +96,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
                 {
                     currentVolume = ask.Volume;
                     var newBidVolume = bid.Volume - ask.Volume;
-                    var newBid = new LimitOrder(bid.ClientId, bid.OrderId, bid.Price, newBidVolume);
+                    var newBid = new LimitOrder(bid.OrderId, bid.ClientId, bid.Price, newBidVolume);
                     currentBids.Remove(bid);
                     currentBids.Insert(0, newBid);
                     currentAsks.Remove(ask);
@@ -110,7 +106,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
                 {
                     currentVolume = bid.Volume;
                     var newAskVolume = ask.Volume - bid.Volume;
-                    var newAsk = new LimitOrder(ask.ClientId, ask.OrderId, ask.Price, newAskVolume);
+                    var newAsk = new LimitOrder(ask.OrderId, ask.ClientId, ask.Price, newAskVolume);
                     currentAsks.Remove(ask);
                     currentAsks.Insert(0, newAsk);
                     currentBids.Remove(bid);
@@ -128,7 +124,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
             }
             while (currentBids.Any() && currentAsks.Any());
 
-            return volume == 0 ? ((decimal?, decimal?)?)null : (volume, pnl);
+            return volume == 0 ? ((decimal?, decimal?)?)null : (volume, Math.Round(pnl, 6));
         }
 
         /// <inheritdoc />

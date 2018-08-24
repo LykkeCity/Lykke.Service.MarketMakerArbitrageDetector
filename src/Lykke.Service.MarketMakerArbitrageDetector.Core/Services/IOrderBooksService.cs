@@ -7,6 +7,10 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Services
     {
         IReadOnlyCollection<OrderBook> GetAll();
 
-        decimal? ConvertToUsd(string sourceAssetId);
+        IReadOnlyCollection<OrderBookRow> GetAllRows();
+
+        OrderBook Get(string assetPairId);
+
+        decimal? ConvertToUsd(string sourceAssetId, decimal value, int accuracy = 0);
     }
 }

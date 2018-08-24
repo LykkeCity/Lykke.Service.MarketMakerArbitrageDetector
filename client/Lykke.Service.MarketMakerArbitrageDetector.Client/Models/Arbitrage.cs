@@ -2,9 +2,9 @@
 {
     public class Arbitrage
     {
-        public AssetPair Target { get; set; }
+        public string Target { get; set; }
 
-        public AssetPair Source { get; set; }
+        public string Source { get; set; }
 
         public decimal Spread { get; set; }
 
@@ -20,9 +20,9 @@
 
         public decimal? PnLInUsd { get; set; }
 
-        public decimal? BaseAsk { get; set; }
+        public decimal? TargetAsk { get; set; }
 
-        public decimal? BaseBid { get; set; }
+        public decimal? TargetBid { get; set; }
 
         public decimal? SynthAsk { get; set; }
 
