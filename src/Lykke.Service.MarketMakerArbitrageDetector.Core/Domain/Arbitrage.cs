@@ -6,9 +6,9 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 {
     public class Arbitrage
     {
-        public string Target { get; }
+        public AssetPair Target { get; }
 
-        public string Source { get; }
+        public AssetPair Source { get; }
 
         public decimal Spread { get; }
 
