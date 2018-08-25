@@ -7,7 +7,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
     {
         public string Exchange { get; }
 
-        public string AssetPair { get; }
+        public AssetPair AssetPair { get; }
 
         public IReadOnlyCollection<string> MarketMakers { get; }
 
@@ -26,7 +26,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
         public DateTime Timestamp { get; }
 
 
-        public OrderBookRow(string exchange, string assetPair, IReadOnlyCollection<string> marketMakers, decimal? bestBid, decimal? bestAsk,
+        public OrderBookRow(string exchange, AssetPair assetPair, IReadOnlyCollection<string> marketMakers, decimal? bestBid, decimal? bestAsk,
             decimal bidsVolume, decimal? bidsVolumeInUsd, decimal asksVolume, decimal? asksVolumeInUsd, DateTime timestamp)
         {
             Exchange = exchange;

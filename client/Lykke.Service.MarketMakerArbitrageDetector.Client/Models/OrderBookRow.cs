@@ -7,7 +7,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Client.Models
     {
         public string Exchange { get; set; }
 
-        public string AssetPair { get; set; }
+        public AssetPair AssetPair { get; set; }
 
         public IReadOnlyCollection<string> MarketMakers { get; set; } = new List<string>();
 

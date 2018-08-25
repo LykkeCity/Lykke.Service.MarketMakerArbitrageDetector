@@ -61,7 +61,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                     new OrderBookRow
                     (
                         x.Exchange,
-                        x.AssetPair.Name,
+                        x.AssetPair,
                         GetMarketMakers(x).Values,
                         x.BestBid?.Price,
                         x.BestAsk?.Price,
@@ -70,7 +70,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                         x.AsksVolume,
                         ConvertToUsd(x.AssetPair.Base.Id, x.AsksVolume),
                         x.Timestamp
-                    )).OrderBy(x => x.AssetPair).ToList();
+                    )).OrderBy(x => x.AssetPair.Name).ToList();
             }
         }
 
