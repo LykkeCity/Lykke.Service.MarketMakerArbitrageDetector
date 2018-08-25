@@ -38,8 +38,8 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 
 
         public Arbitrage(AssetPair target, AssetPair source, decimal spread, string targetSide, string conversionPath,
-            decimal volume, decimal? volumeInUsd, decimal pnL, decimal? pnLInUsd, decimal? targetAsk, decimal? targetBid,
-            decimal? synthAsk, decimal? synthBid)
+            decimal volume, decimal? volumeInUsd, decimal pnL, decimal? pnLInUsd, decimal? targetBid, decimal? targetAsk,
+            decimal? synthBid, decimal? synthAsk)
         {
             Target = target;
             Source = source;
@@ -50,10 +50,10 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
             VolumeInUsd = volumeInUsd;
             PnL = pnL;
             PnLInUsd = pnLInUsd;
-            TargetAsk = targetAsk;
             TargetBid = targetBid;
-            SynthAsk = synthAsk;
+            TargetAsk = targetAsk;
             SynthBid = synthBid;
+            SynthAsk = synthAsk;
         }
 
         public static decimal GetSpread(decimal bidPrice, decimal askPrice)
