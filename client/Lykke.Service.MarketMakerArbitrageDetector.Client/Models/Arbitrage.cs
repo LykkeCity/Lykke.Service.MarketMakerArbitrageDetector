@@ -2,9 +2,9 @@
 {
     public class Arbitrage
     {
-        public string Target { get; set; }
+        public AssetPair Target { get; set; }
 
-        public string Source { get; set; }
+        public AssetPair Source { get; set; }
 
         public decimal Spread { get; set; }
 
