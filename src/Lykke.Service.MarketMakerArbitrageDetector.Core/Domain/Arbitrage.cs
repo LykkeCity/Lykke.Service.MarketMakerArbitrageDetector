@@ -33,7 +33,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
         public decimal? SynthBid { get; }
 
 
-        public Arbitrage(string target, string source, decimal spread, string targetSide, string conversionPath,
+        public Arbitrage(AssetPair target, AssetPair source, decimal spread, string targetSide, string conversionPath,
             decimal volume, decimal? volumeInUsd, decimal pnL, decimal? pnLInUsd, decimal? targetAsk, decimal? targetBid,
             decimal? synthAsk, decimal? synthBid)
         {

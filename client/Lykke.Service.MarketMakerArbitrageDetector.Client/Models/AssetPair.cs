@@ -6,9 +6,9 @@
 
         public string Name { get; set; }
 
-        public Asset Base { get; }
+        public Asset Base { get; set; }
 
-        public Asset Quote { get; }
+        public Asset Quote { get; set; }
 
         public override string ToString()
         {

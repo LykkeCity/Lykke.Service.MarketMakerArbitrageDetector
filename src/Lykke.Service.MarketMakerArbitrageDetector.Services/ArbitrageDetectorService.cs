@@ -126,8 +126,8 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                         var pnLInUsd = _orderBooksService.ConvertToUsd(target.AssetPair.Quote.Id, pnL);
 
                         var lykkeArbitrage = new Arbitrage (
-                            target.AssetPair.Name,
-                            source.AssetPair.Name,
+                            target.AssetPair,
+                            source.AssetPair,
                             spread,
                             targetSide,
                             synthOrderBook.ConversionPath,
