@@ -23,9 +23,9 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Controllers
         [HttpGet]
         [SwaggerOperation("ArbitragesGetAll")]
         [ProducesResponseType(typeof(IReadOnlyList<Arbitrage>), (int)HttpStatusCode.OK)]
-        public Task<IReadOnlyCollection<Arbitrage>> GetAllAsync()
+        public Task<IReadOnlyCollection<Arbitrage>> GetAllAsync(string target, string source)
         {
-            var domain = _arbitrageDetectorService.GetAll();
+            var domain = _arbitrageDetectorService.GetAll(target, source);
             var model = Mapper.Map<List<Arbitrage>>(domain);
 
             return Task.FromResult((IReadOnlyCollection<Arbitrage>)model);

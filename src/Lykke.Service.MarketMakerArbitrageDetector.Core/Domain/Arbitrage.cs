@@ -10,6 +10,10 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 
         public AssetPair Source { get; }
 
+        public int SourcesCount { get; set; }
+
+        public int SynthsCount { get; set; }
+
         public decimal Spread { get; }
 
         public string TargetSide { get; }

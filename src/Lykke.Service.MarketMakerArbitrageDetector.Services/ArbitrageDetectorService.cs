@@ -10,6 +10,7 @@ using Common.Log;
 using Lykke.Common.Log;
 using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain;
 using Lykke.Service.MarketMakerArbitrageDetector.Core.Services;
+using MoreLinq;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector.Services
 {
@@ -33,12 +34,73 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
             _trigger = new TimerTrigger(nameof(ArbitrageDetectorService), executionInterval, logFactory, Execute);
         }
 
-        public IReadOnlyCollection<Arbitrage> GetAll()
+        public IReadOnlyCollection<Arbitrage> GetAll(string target, string source)
         {
+            IEnumerable<Arbitrage> copy;
             lock (_sync)
             {
-                return _arbitrages.OrderByDescending(x => x.PnLInUsd).ToList();
+                copy = _arbitrages.ToList();
             }
+
+            var result = new List<Arbitrage>();
+
+            // Filter by target
+            if (!string.IsNullOrWhiteSpace(target))
+                copy = copy.Where(x => x.Target.Name.Equals(target, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            var groupedByTarget = copy.GroupBy(x => x.Target);
+            foreach (var targetPairArbitrages in groupedByTarget)
+            {
+                var targetArbitrages = targetPairArbitrages.ToList();
+
+                // No target
+                if (string.IsNullOrWhiteSpace(target))
+                {
+                    // Best arbitrage for each target
+                    var bestByProperty = targetArbitrages.MaxBy(x => x.PnL);
+                    bestByProperty.SourcesCount = targetArbitrages.Count;
+                    result.Add(bestByProperty);
+                }
+                // Target selected
+                else
+                {
+                    // No source selected
+                    if (string.IsNullOrWhiteSpace(source))
+                    {
+                        // Group by source
+                        var groupedBySource = targetArbitrages.GroupBy(x => x.Source);
+
+                        foreach (var group in groupedBySource)
+                        {
+                            // Best arbitrage by target and source
+                            var targetGrouped = group.ToList();
+                            var bestByProperty = targetGrouped.MaxBy(x => x.PnL);
+                            bestByProperty.SynthsCount = targetGrouped.Count;
+                            result.Add(bestByProperty);
+                        }
+                    }
+                    // Source selected
+                    else
+                    {
+                        // Filter by source
+                        targetArbitrages = targetArbitrages.Where(x => x.Source.Name.Equals(source, StringComparison.OrdinalIgnoreCase)).ToList();
+
+                        var groupedBySource = targetArbitrages.GroupBy(x => x.Source);
+                        foreach (var baseSourcePairsArbitrages in groupedBySource)
+                        {
+                            var baseSourceArbitrages = baseSourcePairsArbitrages.ToList();
+                            result.AddRange(baseSourceArbitrages);
+                        }
+                    }
+                }
+            }
+
+            result = result.OrderByDescending(x => x.PnLInUsd)
+                           .ThenByDescending(x => x.VolumeInUsd)
+                           .ThenBy(x => x.Spread)
+                           .ToList();
+
+            return result;
         }
 
         public Task Execute(ITimerTrigger timer, TimerTriggeredHandlerArgs args, CancellationToken cancellationToken)

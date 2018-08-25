@@ -6,6 +6,10 @@
 
         public AssetPair Source { get; set; }
 
+        public int SourcesCount { get; set; }
+
+        public int SynthsCount { get; set; }
+
         public decimal Spread { get; set; }
 
         public string TargetSide { get; set; }

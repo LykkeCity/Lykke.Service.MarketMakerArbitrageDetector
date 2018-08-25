@@ -5,6 +5,6 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Services
 {
     public interface IArbitrageDetectorService
     {
-        IReadOnlyCollection<Arbitrage> GetAll();
+        IReadOnlyCollection<Arbitrage> GetAll(string target, string source);
     }
 }
