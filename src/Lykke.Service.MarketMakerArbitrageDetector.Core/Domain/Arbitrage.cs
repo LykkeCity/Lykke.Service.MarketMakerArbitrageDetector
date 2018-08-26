@@ -73,26 +73,23 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
                 return null; // no arbitrage
 
             // Clone bids and asks (that in arbitrage only)
-            var currentBids = new List<LimitOrder>();
-            var currentAsks = new List<LimitOrder>();
-            currentBids.AddRange(bids);
-            currentAsks.AddRange(asks);
-
+            var bestBidPrice = bids.Max(x => x.Price);
+            var bestAskPrice = asks.Min(x => x.Price);
+            var currentBids = bids.Where(x => x.Price > bestAskPrice)
+                                  .Select(x => new LimitOrder(x.OrderId, x.ClientId, x.Price, x.Volume))
+                                  .OrderByDescending(x => x.Price).ToList();
+            var currentAsks = asks.Where(x => x.Price < bestBidPrice)
+                                  .Select(x => new LimitOrder(x.OrderId, x.ClientId, x.Price, x.Volume))
+                                  .OrderBy(x => x.Price).ToList();
             decimal volume = 0;
             decimal pnl = 0;
             do
             {
-                // Recalculate best bid and best ask
-                var bestBidPrice = currentBids.Max(x => x.Price);
-                var bestAskPrice = currentAsks.Min(x => x.Price);
-                currentBids = currentBids.Where(x => x.Price > bestAskPrice).OrderByDescending(x => x.Price).ToList();
-                currentAsks = currentAsks.Where(x => x.Price < bestBidPrice).OrderBy(x => x.Price).ToList();
-
-                if (!currentBids.Any() || !currentAsks.Any()) // no more arbitrage
-                    break;
-
                 var bid = currentBids.First();
                 var ask = currentAsks.First();
+
+                if (!currentBids.Any() || !currentAsks.Any() || bid.Price <= ask.Price) // no more arbitrage
+                    break;
 
                 // Calculate volume for current step and remove it
                 decimal currentVolume = 0;
@@ -128,7 +125,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
             }
             while (currentBids.Any() && currentAsks.Any());
 
-            return volume == 0 ? ((decimal?, decimal?)?)null : (volume, Math.Round(pnl, 6));
+            return volume == 0 ? ((decimal?, decimal?)?)null : (volume, Math.Round(pnl, 8));
         }
 
         /// <inheritdoc />

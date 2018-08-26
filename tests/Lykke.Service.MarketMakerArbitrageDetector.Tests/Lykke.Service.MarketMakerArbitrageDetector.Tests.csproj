@@ -9,4 +9,7 @@
     <PackageReference Include="xunit" Version="2.4.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Lykke.Service.MarketMakerArbitrageDetector.Core\Lykke.Service.MarketMakerArbitrageDetector.Core.csproj" />
+  </ItemGroup>
 </Project>
