@@ -1,20 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 {
     public class SynthOrderBook : OrderBook
     {
-        public string ConversionPath { get; }
+        public override string Exchange => string.Join(" - ", OriginalOrderBooks.Select(x => x.Exchange));
+
+        public string ConversionPath => string.Join(" & ", OriginalOrderBooks.Select(x => x.AssetPair.Name));
 
         public IReadOnlyCollection<OrderBook> OriginalOrderBooks { get; }
 
-        public SynthOrderBook(string exchange, AssetPair assetPair, IReadOnlyCollection<LimitOrder> bids, IReadOnlyCollection<LimitOrder> asks,
-            string conversionPath, IReadOnlyCollection<OrderBook> originalOrderBooks, DateTime timestamp)
-            : base(exchange, assetPair, bids, asks, timestamp)
+        public SynthOrderBook(AssetPair assetPair, IReadOnlyCollection<LimitOrder> bids, IReadOnlyCollection<LimitOrder> asks,
+            IReadOnlyCollection<OrderBook> originalOrderBooks, DateTime timestamp)
+            : base(null, assetPair, bids, asks, timestamp)
         {
-            ConversionPath = conversionPath;
             OriginalOrderBooks = originalOrderBooks;
         }
 
@@ -54,13 +56,10 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
             if (orderBookResult == null)
                 throw new InvalidOperationException("AssetPairs must be the same or reversed)");
 
-            var conversionPath = orderBook.AssetPair.ToString();
             var result = new SynthOrderBook (
-                orderBookResult.Exchange,
                 targetAssetPair,
                 orderBookResult.Bids,
                 orderBookResult.Asks,
-                conversionPath,
                 originalOrderBooks,
                 orderBook.Timestamp
             );
@@ -137,13 +136,12 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
             {
                 foreach (var rightBid in right.Bids)
                 {
-                    var newBidPrice = Math.Round(leftBid.Price * rightBid.Price, 6);
-                    var rightBidVolumeInBaseAsset = Math.Round(rightBid.Volume / leftBid.Price, 6);
+                    var newBidPrice = leftBid.Price * rightBid.Price;
+                    var rightBidVolumeInBaseAsset = rightBid.Volume / leftBid.Price;
                     var newBidVolume = Math.Min(leftBid.Volume, rightBidVolumeInBaseAsset);
 
-                    var newClientId = $"{leftBid.ClientId} + {rightBid.ClientId}";
-                    var newOrderId = $"{leftBid.OrderId} + {rightBid.OrderId}";
-                    var newBidVolumePrice = new LimitOrder(newOrderId, newClientId, newBidPrice, newBidVolume);
+                    //var newOrderId = ConcatWithPlus(leftBid.OrderId, rightBid.OrderId);
+                    var newBidVolumePrice = new LimitOrder(null, null, newBidPrice, newBidVolume);
                     bids.Add(newBidVolumePrice);
                 }
             }
@@ -153,33 +151,30 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
             {
                 foreach (var rightAsk in right.Asks)
                 {
-                    var newAskPrice = Math.Round(leftAsk.Price * rightAsk.Price, 6);
-                    var rightAskVolumeInBaseAsset = Math.Round(rightAsk.Volume / leftAsk.Price, 6);
+                    var newAskPrice = leftAsk.Price * rightAsk.Price;
+                    var rightAskVolumeInBaseAsset = rightAsk.Volume / leftAsk.Price;
                     var newAskVolume = Math.Min(leftAsk.Volume, rightAskVolumeInBaseAsset);
 
-                    var newClientId = $"{leftAsk.ClientId} + {rightAsk.ClientId}";
-                    var newOrderId = $"{leftAsk.OrderId} + {rightAsk.OrderId}";
-                    var newAskVolumePrice = new LimitOrder(newOrderId, newClientId, newAskPrice, newAskVolume);
+                    //var newOrderId = ConcatWithPlus(leftAsk.OrderId, rightAsk.OrderId);
+                    var newAskVolumePrice = new LimitOrder(null, null, newAskPrice, newAskVolume);
                     asks.Add(newAskVolumePrice);
                 }
             }
 
-            var exchange = GetSourcesPath(one.Exchange, another.Exchange);
-            var conversionPath = GetConversionPath(one, another);
             var originalOrderBooks = new List<OrderBook> { one, another };
             var timestamp = left.Timestamp < right.Timestamp ? left.Timestamp : right.Timestamp;
 
-            var result = new SynthOrderBook(exchange, targetAssetPair, bids, asks, conversionPath, originalOrderBooks, timestamp);
+            var result = new SynthOrderBook(targetAssetPair, bids, asks, originalOrderBooks, timestamp);
 
             return result;
         }
 
-        public static SynthOrderBook FromOrderBooks(OrderBook one, OrderBook second, OrderBook third, AssetPair targetAssetPair)
+        public static SynthOrderBook FromOrderBooks(OrderBook first, OrderBook second, OrderBook third, AssetPair targetAssetPair)
         {
             #region Checking arguments 
 
-            if (one == null)
-                throw new ArgumentNullException(nameof(one));
+            if (first == null)
+                throw new ArgumentNullException(nameof(first));
 
             if (second == null)
                 throw new ArgumentNullException(nameof(second));
@@ -187,8 +182,8 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
             if (third == null)
                 throw new ArgumentNullException(nameof(third));
 
-            if (!one.AssetPair.IsValid())
-                throw new ArgumentException(nameof(one) + "." + nameof(one.AssetPair));
+            if (!first.AssetPair.IsValid())
+                throw new ArgumentException(nameof(first) + "." + nameof(first.AssetPair));
 
             if (!second.AssetPair.IsValid())
                 throw new ArgumentException(nameof(second) + "." + nameof(second.AssetPair));
@@ -201,7 +196,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 
             #endregion
 
-            var orderBooks = new List<OrderBook> { one, second, third };
+            var orderBooks = new List<OrderBook> { first, second, third };
 
             OrderBook FindOrderBookByAssetId(string assetId)
             {
@@ -259,15 +254,14 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
                 {
                     foreach (var rightBid in right.Bids)
                     {
-                        var newBidPrice = Math.Round(leftBid.Price * middleBid.Price * rightBid.Price, 6);
-                        var interimBidPrice = Math.Round(leftBid.Price * middleBid.Price, 6);
-                        var interimBidVolumeInBaseAsset = Math.Round(middleBid.Volume / leftBid.Price, 6);
-                        var rightBidVolumeInBaseAsset = Math.Round(rightBid.Volume / interimBidPrice, 6);
+                        var newBidPrice = leftBid.Price * middleBid.Price * rightBid.Price;
+                        var interimBidPrice = leftBid.Price * middleBid.Price;
+                        var interimBidVolumeInBaseAsset = middleBid.Volume / leftBid.Price;
+                        var rightBidVolumeInBaseAsset = rightBid.Volume / interimBidPrice;
                         var newBidVolume = Math.Min(Math.Min(leftBid.Volume, interimBidVolumeInBaseAsset), rightBidVolumeInBaseAsset);
 
-                        var newClientId = $"{leftBid.ClientId} + {middleBid.ClientId} + {rightBid.ClientId}";
-                        var newOrderId = $"{leftBid.OrderId} + {middleBid.OrderId} + {rightBid.OrderId}";
-                        var newBidVolumePrice = new LimitOrder(newOrderId, newClientId, newBidPrice, newBidVolume);
+                        //var newOrderId = ConcatWithPlus(leftBid.OrderId, middleBid.OrderId, rightBid.OrderId);
+                        var newBidVolumePrice = new LimitOrder(null, null, newBidPrice, newBidVolume);
                         bids.Add(newBidVolumePrice);
                     }
                 }
@@ -280,28 +274,25 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
                 {
                     foreach (var rightAsk in right.Asks)
                     {
-                        var newAskPrice = Math.Round(leftAsk.Price * middleAsk.Price * rightAsk.Price, 6);
-                        var interimAskPrice = Math.Round(leftAsk.Price * middleAsk.Price, 6);
-                        var interimAskVolumeInBaseAsset = Math.Round(middleAsk.Volume / leftAsk.Price, 6);
-                        var rightAskVolumeInBaseAsset = Math.Round(rightAsk.Volume / interimAskPrice, 6);
+                        var newAskPrice = leftAsk.Price * middleAsk.Price * rightAsk.Price;
+                        var interimAskPrice = leftAsk.Price * middleAsk.Price;
+                        var interimAskVolumeInBaseAsset = middleAsk.Volume / leftAsk.Price;
+                        var rightAskVolumeInBaseAsset = rightAsk.Volume / interimAskPrice;
                         var newAskVolume = Math.Min(Math.Min(leftAsk.Volume, interimAskVolumeInBaseAsset), rightAskVolumeInBaseAsset);
 
-                        var newClientId = $"{leftAsk.ClientId} + {middleAsk.ClientId} + {rightAsk.ClientId}";
-                        var newOrderId = $"{leftAsk.OrderId} + {middleAsk.OrderId} + {rightAsk.OrderId}";
-                        var newAskVolumePrice = new LimitOrder(newOrderId, newClientId, newAskPrice, newAskVolume);
+                        //var newOrderId = ConcatWithPlus(leftAsk.OrderId, middleAsk.OrderId, rightAsk.OrderId);
+                        var newAskVolumePrice = new LimitOrder(null, null, newAskPrice, newAskVolume);
                         asks.Add(newAskVolumePrice);
                     }
                 }
             }
 
-            var exchange = GetSourcesPath(one.Exchange, second.Exchange, third.Exchange);
-            var conversionPath = GetConversionPath(one, second, third);
-            var originalOrderBooks = new List<OrderBook> { one, second, third };
+            var originalOrderBooks = new List<OrderBook> { first, second, third };
 
             var interimTimestamp = left.Timestamp < middle.Timestamp ? left.Timestamp : middle.Timestamp;
             var timestamp = interimTimestamp < right.Timestamp ? interimTimestamp : right.Timestamp;
 
-            var result = new SynthOrderBook(exchange, targetAssetPair, bids, asks, conversionPath, originalOrderBooks, timestamp);
+            var result = new SynthOrderBook(targetAssetPair, bids, asks, originalOrderBooks, timestamp);
 
             return result;
         }
@@ -518,24 +509,13 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
         }
 
 
-        public static string GetConversionPath(OrderBook left, OrderBook right)
+        private static string ConcatWithPlus(string s1, string s2, string s3 = null)
         {
-            return $"{left.AssetPair} & {right.AssetPair}";
-        }
+            var result = new StringBuilder(s1).Append(" + ").Append(s2);
+            if (s3 != null)
+                result.Append(" + ").Append(s3);
 
-        public static string GetConversionPath(OrderBook left, OrderBook middle, OrderBook right)
-        {
-            return $"{left.AssetPair} & {middle.AssetPair} & {right.AssetPair}";
-        }
-
-        public static string GetSourcesPath(string leftSource, string rightSource)
-        {
-            return $"{leftSource} - {rightSource}";
-        }
-
-        public static string GetSourcesPath(string leftSource, string middleSource, string rightSource)
-        {
-            return $"{leftSource} - {middleSource} - {rightSource}";
+            return result.ToString();
         }
 
         /// <inheritdoc />

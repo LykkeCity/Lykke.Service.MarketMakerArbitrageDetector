@@ -76,10 +76,10 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
             var bestBidPrice = bids.Max(x => x.Price);
             var bestAskPrice = asks.Min(x => x.Price);
             var currentBids = bids.Where(x => x.Price > bestAskPrice)
-                                  .Select(x => new LimitOrder(x.OrderId, x.ClientId, x.Price, x.Volume))
+                                  .Select(x => new LimitOrder(null, null, x.Price, x.Volume)) // orderId and clientId doesn't metter for this method
                                   .OrderByDescending(x => x.Price).ToList();
             var currentAsks = asks.Where(x => x.Price < bestBidPrice)
-                                  .Select(x => new LimitOrder(x.OrderId, x.ClientId, x.Price, x.Volume))
+                                  .Select(x => new LimitOrder(null, null, x.Price, x.Volume)) // orderId and clientId doesn't metter for this method
                                   .OrderBy(x => x.Price).ToList();
             decimal volume = 0;
             decimal pnl = 0;
@@ -92,36 +92,30 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
                     break;
 
                 // Calculate volume for current step and remove it
-                decimal currentVolume = 0;
-                if (bid.Volume > ask.Volume)
-                {
-                    currentVolume = ask.Volume;
-                    var newBidVolume = bid.Volume - ask.Volume;
-                    var newBid = new LimitOrder(bid.OrderId, bid.ClientId, bid.Price, newBidVolume);
-                    currentBids.Remove(bid);
-                    currentBids.Insert(0, newBid);
-                    currentAsks.Remove(ask);
-                }
-
+                decimal tradeVolume = 0;
+                var tradeBidPrice = bid.Price;
+                var tradeAskPrice = ask.Price;
                 if (bid.Volume < ask.Volume)
                 {
-                    currentVolume = bid.Volume;
-                    var newAskVolume = ask.Volume - bid.Volume;
-                    var newAsk = new LimitOrder(ask.OrderId, ask.ClientId, ask.Price, newAskVolume);
-                    currentAsks.Remove(ask);
-                    currentAsks.Insert(0, newAsk);
-                    currentBids.Remove(bid);
+                    tradeVolume = bid.Volume;
+                    ask.Volume = ask.Volume - bid.Volume;
+                    currentBids.RemoveAt(0);
                 }
-
-                if (bid.Volume == ask.Volume)
+                else if (bid.Volume > ask.Volume)
                 {
-                    currentVolume = bid.Volume;
-                    currentBids.Remove(bid);
-                    currentAsks.Remove(ask);
+                    tradeVolume = ask.Volume;
+                    bid.Volume = bid.Volume - ask.Volume;
+                    currentAsks.RemoveAt(0);
+                }
+                else if (bid.Volume == ask.Volume)
+                {
+                    tradeVolume = bid.Volume;
+                    currentBids.RemoveAt(0);
+                    currentAsks.RemoveAt(0);
                 }
 
-                volume += currentVolume;
-                pnl += currentVolume * (bid.Price - ask.Price);
+                volume += tradeVolume;
+                pnl += tradeVolume * (tradeBidPrice - tradeAskPrice);
             }
             while (currentBids.Any() && currentAsks.Any());
 

@@ -10,7 +10,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 
         public decimal Price { get; }
 
-        public decimal Volume { get; }
+        public decimal Volume { get; set; }
 
 
         public LimitOrder(string orderId, string clientId, decimal price, decimal volume)

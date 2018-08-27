@@ -233,7 +233,13 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                 AddOrderBookFromCacheProvider(orderBook);
             }
 
-            _log.Info($"Initialized {foundOrderBooks} of {assetPairs.Count} order books. For now {_dirtyLykkeOrderBooks.Count} order books.");
+            int lykkeOrderBooksCount;
+            lock (_sync)
+            {
+                lykkeOrderBooksCount = _lykkeOrderBooks.Count;
+            }
+
+            _log.Info($"Initialized {foundOrderBooks} of {assetPairs.Count} order books. For now {lykkeOrderBooksCount} order books.");
         }
 
         private void AddOrderBookFromCacheProvider(OrderBook orderBook)

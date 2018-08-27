@@ -7,7 +7,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 {
     public class OrderBook
     {
-        public string Exchange { get; }
+        public virtual string Exchange { get; }
 
         public AssetPair AssetPair { get; private set; }
 
