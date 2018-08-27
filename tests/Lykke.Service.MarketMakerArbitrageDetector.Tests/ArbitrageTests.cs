@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain;
 using Xunit;
 
@@ -14,11 +15,8 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
             var assetPair = new AssetPair("BTCUSD", "BTCUSD", new Asset("BTC", "BTC"), new Asset("USD", "USD"));
             var timestamp = DateTime.UtcNow;
 
-            var asks = new List<LimitOrder>();
-            var bids = new List<LimitOrder>();
-
-            var orderBook1 = new OrderBook(exchangeName, assetPair, bids, asks, timestamp);
-            var orderBook2 = new OrderBook(exchangeName, assetPair, bids, asks, timestamp);
+            var orderBook1 = new OrderBook(exchangeName, assetPair, new List<LimitOrder>(), new List<LimitOrder>(), timestamp);
+            var orderBook2 = new OrderBook(exchangeName, assetPair, new List<LimitOrder>(), new List<LimitOrder>(), timestamp);
 
             var volume = Arbitrage.GetArbitrageVolumePnL(orderBook1.Bids, orderBook2.Asks);
             Assert.Null(volume);

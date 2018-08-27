@@ -75,20 +75,23 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
             // Clone bids and asks (that in arbitrage only)
             var bestBidPrice = bids.Max(x => x.Price);
             var bestAskPrice = asks.Min(x => x.Price);
+
             var currentBids = bids.Where(x => x.Price > bestAskPrice)
                                   .Select(x => new LimitOrder(null, null, x.Price, x.Volume)) // orderId and clientId doesn't metter for this method
-                                  .OrderByDescending(x => x.Price).ToList();
+                                  .OrderByDescending(x => x.Price).ToArray();
             var currentAsks = asks.Where(x => x.Price < bestBidPrice)
                                   .Select(x => new LimitOrder(null, null, x.Price, x.Volume)) // orderId and clientId doesn't metter for this method
-                                  .OrderBy(x => x.Price).ToList();
+                                  .OrderBy(x => x.Price).ToArray();
             decimal volume = 0;
             decimal pnl = 0;
+            var b = 0;
+            var a = 0;
             do
             {
-                var bid = currentBids.First();
-                var ask = currentAsks.First();
+                var bid = currentBids[b];
+                var ask = currentAsks[a];
 
-                if (!currentBids.Any() || !currentAsks.Any() || bid.Price <= ask.Price) // no more arbitrage
+                if (currentBids.Length < 1 || currentAsks.Length < 1 || bid.Price <= ask.Price) // no more arbitrage
                     break;
 
                 // Calculate volume for current step and remove it
@@ -99,25 +102,25 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
                 {
                     tradeVolume = bid.Volume;
                     ask.Volume = ask.Volume - bid.Volume;
-                    currentBids.RemoveAt(0);
+                    b++;
                 }
                 else if (bid.Volume > ask.Volume)
                 {
                     tradeVolume = ask.Volume;
                     bid.Volume = bid.Volume - ask.Volume;
-                    currentAsks.RemoveAt(0);
+                    a++;
                 }
                 else if (bid.Volume == ask.Volume)
                 {
                     tradeVolume = bid.Volume;
-                    currentBids.RemoveAt(0);
-                    currentAsks.RemoveAt(0);
+                    b++;
+                    a++;
                 }
 
                 volume += tradeVolume;
                 pnl += tradeVolume * (tradeBidPrice - tradeAskPrice);
             }
-            while (currentBids.Any() && currentAsks.Any());
+            while (b < currentBids.Length && a < currentAsks.Length);
 
             return volume == 0 ? ((decimal?, decimal?)?)null : (volume, Math.Round(pnl, 8));
         }
