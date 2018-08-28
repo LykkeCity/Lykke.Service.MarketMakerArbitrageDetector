@@ -96,7 +96,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 
         public bool Equals(AssetPair other)
         {
-            return Base.Id == other.Base.Id && Quote.Id == other.Quote.Id;
+            return Id == other.Id;
         }
 
         /// <inheritdoc />

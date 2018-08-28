@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
+﻿namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 {
     public class LimitOrder
     {
