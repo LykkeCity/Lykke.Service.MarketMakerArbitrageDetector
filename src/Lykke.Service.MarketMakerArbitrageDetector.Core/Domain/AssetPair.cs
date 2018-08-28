@@ -1,5 +1,5 @@
 ﻿using System;
-using System.IO;
+using System.Diagnostics;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 {
@@ -33,38 +33,32 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
                    Base != null && Base.IsValid() && Quote != null && Quote.IsValid();
         }
 
-        public void Validate()
-        {
-            if (!IsValid())
-                throw new InvalidDataException($"Asset pair is invalid: Id: '{Id}', Name: '{Name}', Base: '{Base}', Quote: '{Quote}'");
-        }
-
         public AssetPair Reverse()
         {
-            Validate();
+            Debug.Assert(IsValid());
 
             return new AssetPair(Id, Quote.Name + Base.Name, Quote, Base);
         }
 
         public bool IsReversed(AssetPair other)
         {
-            Validate();
-            other.Validate();
+            Debug.Assert(IsValid());
+            Debug.Assert(other.IsValid());
 
             return Base.Id == other.Quote.Id && Quote.Id == other.Base.Id;
         }
 
-        public bool IsEqualOrReversed(AssetPair other)
+        public bool EqualOrReversed(AssetPair other)
         {
-            Validate();
-            other.Validate();
+            Debug.Assert(IsValid());
+            Debug.Assert(other.IsValid());
 
             return Equals(other) || IsReversed(other);
         }
 
         public bool ContainsAsset(string assetId)
         {
-            Validate();
+            Debug.Assert(IsValid());
 
             if (string.IsNullOrWhiteSpace(assetId))
                 throw new ArgumentException(nameof(assetId));
@@ -74,7 +68,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 
         public bool ContainsAssets(string oneId, string anotherId)
         {
-            Validate();
+            Debug.Assert(IsValid());
 
             if (string.IsNullOrWhiteSpace(oneId))
                 throw new ArgumentException(nameof(oneId));
@@ -85,12 +79,10 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
             return ContainsAsset(oneId) && ContainsAsset(anotherId);
         }
 
-        public string GetOtherAsset(string oneId)
+        public string GetOtherAssetId(string oneId)
         {
-            Validate();
-
-            if (string.IsNullOrWhiteSpace(oneId))
-                throw new ArgumentException(nameof(oneId));
+            Debug.Assert(!string.IsNullOrWhiteSpace(oneId));
+            Debug.Assert(IsValid());
 
             if (!ContainsAsset(oneId))
                 return null;

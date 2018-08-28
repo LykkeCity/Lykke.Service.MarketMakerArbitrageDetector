@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain;
 using Xunit;
 
@@ -29,16 +28,16 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
             var assetPair = new AssetPair("BTCUSD", "BTCUSD", new Asset("BTC", "BTC"), new Asset("USD", "USD"));
             var timestamp = DateTime.UtcNow;
 
+            var bids = new List<LimitOrder>
+            {
+                new LimitOrder("", "", 8825, 9),
+                new LimitOrder("", "", 8823, 5)
+            };
             var asks = new List<LimitOrder>
             {
                 new LimitOrder("", "", 9000, 10),
                 new LimitOrder("", "", 8999.95m, 7),
                 new LimitOrder("", "", 8900.12345677m, 3)
-            };
-            var bids = new List<LimitOrder>
-            {
-                new LimitOrder("", "", 8825, 9),
-                new LimitOrder("", "", 8823, 5)
             };
 
             var orderBook1 = new OrderBook(exchangeName, assetPair, bids, asks, timestamp);
@@ -55,17 +54,16 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
             var assetPair = new AssetPair("BTCUSD", "BTCUSD", new Asset("BTC", "BTC"), new Asset("USD", "USD"));
             var timestamp = DateTime.UtcNow;
 
+            var bids = new List<LimitOrder>
+            {
+                new LimitOrder("", "", 9000, 9), // <-
+                new LimitOrder("", "", 8900, 5)
+            };
             var asks = new List<LimitOrder>
             {
                 new LimitOrder("", "", 9000, 10),
                 new LimitOrder("", "", 8999.95m, 7), // <-
                 new LimitOrder("", "", 8900.12345677m, 3) // <-
-            };
-
-            var bids = new List<LimitOrder>
-            {
-                new LimitOrder("", "", 9000, 9), // <-
-                new LimitOrder("", "", 8900, 5)
             };
 
             var bidsOrderBook = new OrderBook(exchangeName, assetPair, bids, new List<LimitOrder>(), timestamp);
@@ -85,6 +83,12 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
             var assetPair = new AssetPair("BTCUSD", "BTCUSD", new Asset("BTC", "BTC"), new Asset("USD", "USD"));
             var timestamp = DateTime.UtcNow;
 
+            var bids = new List<LimitOrder>
+            {
+                new LimitOrder("", "", 900, 5),   // <-
+                new LimitOrder("", "", 750, 100), // <-
+                new LimitOrder("", "", 550, 1)    // <-
+            };
             var asks = new List<LimitOrder>
             {
                 new LimitOrder("", "", 1000, 10),
@@ -96,13 +100,6 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 new LimitOrder("", "", 600, 10), // <-
                 new LimitOrder("", "", 550, 1),  // <-
                 new LimitOrder("", "", 500, 10)  // <-
-            };
-
-            var bids = new List<LimitOrder>
-            {
-                new LimitOrder("", "", 900, 5),   // <-
-                new LimitOrder("", "", 750, 100), // <-
-                new LimitOrder("", "", 550, 1)    // <-
             };
 
             var bidsOrderBook = new OrderBook(exchangeName, assetPair, bids, new List<LimitOrder>(), timestamp);
@@ -121,6 +118,17 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
             var assetPair = new AssetPair("BTCUSD", "BTCUSD", new Asset("BTC", "BTC"), new Asset("USD", "USD"));
             var timestamp = DateTime.UtcNow;
 
+            var bids = new List<LimitOrder>
+            {
+                new LimitOrder("", "", 3.2m, 1),
+                new LimitOrder("", "", 3.1m, 1),
+                new LimitOrder("", "", 3m, 1),
+                new LimitOrder("", "", 2.5m, 1),
+                new LimitOrder("", "", 2.1m, 100),
+                new LimitOrder("", "", 1.6m, 5),
+                new LimitOrder("", "", 1.5m, 5),
+                new LimitOrder("", "", 1.4m, 5)
+            };
             var asks = new List<LimitOrder>
             {
                 new LimitOrder("", "", 2.9m, 10),
@@ -137,18 +145,6 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 new LimitOrder("", "", 1.3m, 10),
                 new LimitOrder("", "", 1.2m, 10),
                 new LimitOrder("", "", 1.1m, 10),
-            };
-
-            var bids = new List<LimitOrder>
-            {
-                new LimitOrder("", "", 3.2m, 1),
-                new LimitOrder("", "", 3.1m, 1),
-                new LimitOrder("", "", 3m, 1),
-                new LimitOrder("", "", 2.5m, 1),
-                new LimitOrder("", "", 2.1m, 100),
-                new LimitOrder("", "", 1.6m, 5),
-                new LimitOrder("", "", 1.5m, 5),
-                new LimitOrder("", "", 1.4m, 5)
             };
 
             var bidsOrderBook = new OrderBook(exchangeName, assetPair, bids, new List<LimitOrder>(), timestamp);

@@ -21,9 +21,25 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
             Volume = volume;
         }
 
+        public LimitOrder(decimal price, decimal volume)
+        {
+            Price = price;
+            Volume = volume;
+        }
+
         public LimitOrder Reciprocal()
         {
-            return new LimitOrder(OrderId, ClientId, Math.Round(1 / Price, 6), Math.Round(Volume * Price, 6));
+            return new LimitOrder(OrderId, ClientId, 1 / Price, Volume * Price);
+        }
+
+        public LimitOrder Clone()
+        {
+            return new LimitOrder(OrderId, ClientId, Price, Volume);
+        }
+
+        public LimitOrder CloneWithoutIds()
+        {
+            return new LimitOrder(Price, Volume);
         }
 
         public override string ToString()

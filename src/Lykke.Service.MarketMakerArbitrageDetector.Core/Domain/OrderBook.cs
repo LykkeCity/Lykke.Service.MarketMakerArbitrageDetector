@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using MoreLinq;
 
@@ -11,9 +12,9 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 
         public AssetPair AssetPair { get; private set; }
 
-        public IReadOnlyCollection<LimitOrder> Bids { get; }
+        public IReadOnlyList<LimitOrder> Bids { get; }
 
-        public IReadOnlyCollection<LimitOrder> Asks { get; }
+        public IReadOnlyList<LimitOrder> Asks { get; }
 
         public LimitOrder BestBid => Bids.Any() ? Bids.MaxBy(x => x.Price) : null;
 
@@ -26,12 +27,15 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
         public DateTime Timestamp { get; }
 
 
-        public OrderBook(string exchange, AssetPair assetPair, IReadOnlyCollection<LimitOrder> bids, IReadOnlyCollection<LimitOrder> asks, DateTime timestamp)
+        public OrderBook(string exchange, AssetPair assetPair, IReadOnlyList<LimitOrder> bids, IReadOnlyList<LimitOrder> asks, DateTime timestamp)
         {
+            Debug.Assert(!string.IsNullOrWhiteSpace(exchange));
+            Debug.Assert(assetPair != null);
+
             Exchange = exchange;
             AssetPair = assetPair;
-            Bids = bids;
-            Asks = asks;
+            Bids = bids?.OrderByDescending(x => x.Price).ToList();
+            Asks = asks?.OrderBy(x => x.Price).ToList();
             Timestamp = timestamp;
         }
 
@@ -42,13 +46,10 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 
         public OrderBook Reverse()
         {
-            var result = new OrderBook (
-                Exchange,
-                AssetPair.Reverse(),
-                Bids.Select(x => x.Reciprocal()).OrderByDescending(x => x.Price).ToList(),
-                Asks.Select(x => x.Reciprocal()).OrderByDescending(x => x.Price).ToList(),
-                Timestamp
-            );
+            var newBids = Asks.Select(x => x.Reciprocal()).ToList();
+            var newAsks = Bids.Select(x => x.Reciprocal()).ToList();
+
+            var result = new OrderBook(Exchange, AssetPair.Reverse(), newBids, newAsks, Timestamp);
 
             return result;
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
@@ -36,7 +37,6 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 
         public decimal? SynthBid { get; }
 
-
         public Arbitrage(AssetPair target, AssetPair source, decimal spread, string targetSide, string conversionPath,
             decimal volume, decimal? volumeInUsd, decimal pnL, decimal? pnLInUsd, decimal? targetBid, decimal? targetAsk,
             decimal? synthBid, decimal? synthAsk)
@@ -61,71 +61,65 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
             return Math.Round((askPrice - bidPrice) / bidPrice * 100, 2);
         }
 
-        public static (decimal? Volume, decimal? PnL)? GetArbitrageVolumePnL(IReadOnlyCollection<LimitOrder> bids, IReadOnlyCollection<LimitOrder> asks)
+        public static (decimal Volume, decimal PnL)? GetArbitrageVolumePnL(IEnumerable<LimitOrder> orderedBids, IEnumerable<LimitOrder> orderedAsks)
         {
-            if (bids == null)
-                throw new ArgumentException($"{nameof(bids)}");
+            Debug.Assert(orderedBids != null);
+            Debug.Assert(orderedAsks != null);
 
-            if (asks == null)
-                throw new ArgumentException($"{nameof(asks)}");
+            var orderedBidsEnumerator = orderedBids.GetEnumerator();
+            var orderedAsksEnumerator = orderedAsks.GetEnumerator();
 
-            if (!bids.Any() || !asks.Any() || bids.Max(x => x.Price) <= asks.Min(x => x.Price))
-                return null; // no arbitrage
+            if (!orderedBidsEnumerator.MoveNext() || !orderedAsksEnumerator.MoveNext())
+                return null;
 
-            // Clone bids and asks (that in arbitrage only)
-            var bestBidPrice = bids.Max(x => x.Price);
-            var bestAskPrice = asks.Min(x => x.Price);
-
-            var currentBids = bids.Where(x => x.Price > bestAskPrice)
-                                  .Select(x => new LimitOrder(null, null, x.Price, x.Volume)) // orderId and clientId doesn't metter for this method
-                                  .OrderByDescending(x => x.Price).ToArray();
-            var currentAsks = asks.Where(x => x.Price < bestBidPrice)
-                                  .Select(x => new LimitOrder(null, null, x.Price, x.Volume)) // orderId and clientId doesn't metter for this method
-                                  .OrderBy(x => x.Price).ToArray();
+            // Clone bids and asks
             decimal volume = 0;
             decimal pnl = 0;
-            var b = 0;
-            var a = 0;
-            do
+            var bid = orderedBidsEnumerator.Current.CloneWithoutIds();
+            var ask = orderedAsksEnumerator.Current.CloneWithoutIds();
+            while (true)
             {
-                var bid = currentBids[b];
-                var ask = currentAsks[a];
-
-                if (currentBids.Length < 1 || currentAsks.Length < 1 || bid.Price <= ask.Price) // no more arbitrage
+                if (bid.Price <= ask.Price)
                     break;
-
-                // Calculate volume for current step and remove it
-                decimal tradeVolume = 0;
+                
                 var tradeBidPrice = bid.Price;
                 var tradeAskPrice = ask.Price;
                 if (bid.Volume < ask.Volume)
                 {
-                    tradeVolume = bid.Volume;
+                    volume += bid.Volume;
+                    pnl += bid.Volume * (tradeBidPrice - tradeAskPrice);
                     ask.Volume = ask.Volume - bid.Volume;
-                    b++;
+
+                    if (!orderedBidsEnumerator.MoveNext()) break;
+                    bid = orderedBidsEnumerator.Current;
                 }
                 else if (bid.Volume > ask.Volume)
                 {
-                    tradeVolume = ask.Volume;
+                    volume += ask.Volume;
+                    pnl += ask.Volume * (tradeBidPrice - tradeAskPrice);
                     bid.Volume = bid.Volume - ask.Volume;
-                    a++;
+
+                    if (!orderedAsksEnumerator.MoveNext()) break;
+                    ask = orderedAsksEnumerator.Current;
                 }
                 else if (bid.Volume == ask.Volume)
                 {
-                    tradeVolume = bid.Volume;
-                    b++;
-                    a++;
+                    volume += bid.Volume;
+                    pnl += bid.Volume * (tradeBidPrice - tradeAskPrice);
+
+                    if (!orderedBidsEnumerator.MoveNext()) break;
+                    bid = orderedBidsEnumerator.Current;
+                    if (!orderedAsksEnumerator.MoveNext()) break;
+                    ask = orderedAsksEnumerator.Current;
                 }
-
-                volume += tradeVolume;
-                pnl += tradeVolume * (tradeBidPrice - tradeAskPrice);
             }
-            while (b < currentBids.Length && a < currentAsks.Length);
 
-            return volume == 0 ? ((decimal?, decimal?)?)null : (volume, Math.Round(pnl, 8));
+            orderedBidsEnumerator.Dispose();
+            orderedAsksEnumerator.Dispose();
+
+            return volume == 0 ? ((decimal, decimal)?)null : (volume, Math.Round(pnl, 8));
         }
 
-        /// <inheritdoc />
         public override string ToString()
         {
             return Target + "-" + Source + " : " + ConversionPath;

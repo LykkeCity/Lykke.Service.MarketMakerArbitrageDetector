@@ -260,12 +260,6 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                     // Update half only if it doesn't exist
                     var dirtyOrderBook = _dirtyLykkeOrderBooks[orderBook.AssetPair.Id];
 
-                    var hasToBeUpdated = dirtyOrderBook.Bids == null && orderBook.Bids != null ||
-                                         dirtyOrderBook.Asks == null && orderBook.Asks != null;
-
-                    if (!hasToBeUpdated)
-                        return;
-
                     var newBids = dirtyOrderBook.Bids ?? orderBook.Bids;
                     var newAsks = dirtyOrderBook.Asks ?? orderBook.Asks;
 
@@ -327,15 +321,15 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
 
             foreach (var limitOrder in orderBook.Prices)
             {
+                // Filter out negative or zero prices and zero volumes
+                if (limitOrder.Price <= 0 || (decimal)limitOrder.Volume == 0)
+                    continue;
+
                 if (limitOrder.Volume > 0)
                     bids.Add(new LimitOrder(limitOrder.Id, limitOrder.ClientId, (decimal)limitOrder.Price, (decimal)limitOrder.Volume));
                 else
                     asks.Add(new LimitOrder(limitOrder.Id, limitOrder.ClientId, (decimal)limitOrder.Price, Math.Abs((decimal)limitOrder.Volume)));
             }
-
-            // Filter out negative and zero prices and volumes
-            bids = bids.Where(x => x.Price > 0 && x.Volume > 0).ToList();
-            asks = asks.Where(x => x.Price > 0 && x.Volume > 0).ToList();
 
             var result = new OrderBook(LykkeExchangeName, new AssetPair(orderBook.AssetPair), bids, asks, orderBook.Timestamp);
 

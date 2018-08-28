@@ -72,8 +72,8 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.RabbitMQ.Subscribers
                     .Where(x => x.Price > 0 && x.Volume > 0) // Filter out negative and zero prices and volumes
                     .ToList();
 
-                IReadOnlyCollection<LimitOrder> bids = null;
-                IReadOnlyCollection<LimitOrder> asks = null;
+                IReadOnlyList<LimitOrder> bids = null;
+                IReadOnlyList<LimitOrder> asks = null;
 
                 if (message.IsBuy)
                     bids = limitOrders;

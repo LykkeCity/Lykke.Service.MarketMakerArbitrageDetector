@@ -32,7 +32,6 @@
 
         public decimal? SynthBid { get; set; }
 
-        /// <inheritdoc />
         public override string ToString()
         {
             return Target + "-" + Source + " : " + ConversionPath;
