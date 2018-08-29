@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using MoreLinq;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 {
@@ -11,9 +12,9 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 
         public AssetPair AssetPair { get; }
 
-        public IEnumerable<LimitOrder> Bids => GetPrices(GetBids);
+        public IEnumerable<LimitOrder> Bids => GetPrices(GetBids, OrderByDirection.Descending);
 
-        public IEnumerable<LimitOrder> Asks => GetPrices(GetAsks);
+        public IEnumerable<LimitOrder> Asks => GetPrices(GetAsks, OrderByDirection.Ascending);
 
         public LimitOrder BestBid => Bids.FirstOrDefault();
 
@@ -237,11 +238,6 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
             return result;
         }
 
-        public static IReadOnlyCollection<SynthOrderBook> GetSynthsFromAll(AssetPair target, IReadOnlyCollection<OrderBook> orderBooks)
-        {
-            return GetSynthsFromAll(target, orderBooks, orderBooks);
-        }
-
         public static IReadOnlyCollection<SynthOrderBook> GetSynthsFromAll(AssetPair target, OrderBook source,
             IReadOnlyCollection<OrderBook> allOrderBooks)
         {
@@ -269,7 +265,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
         }
 
 
-        public IEnumerable<LimitOrder> GetPrices(Func<OrderBook, AssetPair, IEnumerable<LimitOrder>> method)
+        public IEnumerable<LimitOrder> GetPrices(Func<OrderBook, AssetPair, IEnumerable<LimitOrder>> method, OrderByDirection direction)
         {
             var prepared = PrepareForEnumeration(OriginalOrderBooks, AssetPair);
 
@@ -285,9 +281,62 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
                 var left = prepared.ElementAt(0);
                 var right = prepared.ElementAt(1);
 
-                foreach (var leftPrice in method(left.Value, left.Key))
-                    foreach (var rightPrice in method(right.Value, right.Key))
-                        yield return GetLimitOrder(leftPrice, rightPrice);
+                var leftPricesEnumerator = method(left.Value, left.Key).GetEnumerator();
+                var rightPricesEnumerator = method(right.Value, right.Key).GetEnumerator();
+
+                if (!leftPricesEnumerator.MoveNext() || !rightPricesEnumerator.MoveNext())
+                    yield break;
+
+                var leftCurrentOrders = new List<LimitOrder>();
+                var rightCurrentOrders = new List<LimitOrder>();
+
+                var newLeftOrder = leftPricesEnumerator.Current.CloneWithoutIds();
+                var newRightOrder = rightPricesEnumerator.Current.CloneWithoutIds();
+
+                leftCurrentOrders.Add(newLeftOrder);
+                rightCurrentOrders.Add(newRightOrder);
+
+                // Just return first generated order
+                yield return SynthLimitOrder(newLeftOrder, newRightOrder);
+
+                while (true)
+                {
+                    newLeftOrder = leftPricesEnumerator.MoveNext() ? leftPricesEnumerator.Current.CloneWithoutIds() : null;
+                    newRightOrder = rightPricesEnumerator.MoveNext() ? rightPricesEnumerator.Current.CloneWithoutIds() : null;
+
+                    // TODO: Can be rewritten without neddless call to MoveNext() while it is already null.
+                    if (newLeftOrder == null && newRightOrder == null)
+                        break;
+
+                    var newOrdersWithNewLeftOrder = new List<LimitOrder>();
+                    if (newLeftOrder != null)
+                        foreach (var rightCurrentOrder in rightCurrentOrders)
+                            newOrdersWithNewLeftOrder.Add(SynthLimitOrder(newLeftOrder, rightCurrentOrder));
+
+                    var newOrdersWithNewRightOrder = new List<LimitOrder>();
+                    if (newRightOrder != null)
+                        foreach (var leftCurrentOrder in leftCurrentOrders)
+                            newOrdersWithNewRightOrder.Add(SynthLimitOrder(leftCurrentOrder, newRightOrder));
+
+                    var newCurrentLevelOrders = new List<LimitOrder>();
+                    newCurrentLevelOrders.AddRange(newOrdersWithNewLeftOrder);
+                    newCurrentLevelOrders.AddRange(newOrdersWithNewRightOrder);
+                    if (newLeftOrder != null && newRightOrder != null)
+                        newCurrentLevelOrders.Add(SynthLimitOrder(newLeftOrder, newRightOrder));
+                    var newOrders = newCurrentLevelOrders.OrderBy(x => x.Price, direction);
+
+                    foreach (var limitOrder in newOrders)
+                        yield return limitOrder;
+
+                    if (newLeftOrder != null)
+                        leftCurrentOrders.Add(newLeftOrder);
+
+                    if (newRightOrder != null)
+                        rightCurrentOrders.Add(newRightOrder);
+                }
+
+                leftPricesEnumerator.Dispose();
+                rightPricesEnumerator.Dispose();
             }
 
             if (prepared.Count == 3)
@@ -296,26 +345,102 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
                 var middle = prepared.ElementAt(1);
                 var right = prepared.ElementAt(2);
 
-                foreach (var leftPrice in method(left.Value, left.Key))
-                    foreach (var middlePrice in method(middle.Value, middle.Key))
-                        foreach (var rightPrice in method(right.Value, right.Key))
-                            yield return GetLimitOrder(leftPrice, middlePrice, rightPrice);
+                var leftPricesEnumerator = method(left.Value, left.Key).GetEnumerator();
+                var middlePricesEnumerator = method(middle.Value, middle.Key).GetEnumerator();
+                var rightPricesEnumerator = method(right.Value, right.Key).GetEnumerator();
+
+                if (!leftPricesEnumerator.MoveNext() || !middlePricesEnumerator.MoveNext() || !rightPricesEnumerator.MoveNext())
+                    yield break;
+
+                var leftCurrentOrders = new List<LimitOrder>();
+                var middleCurrentOrders = new List<LimitOrder>();
+                var rightCurrentOrders = new List<LimitOrder>();
+
+                var newLeftOrder = leftPricesEnumerator.Current.CloneWithoutIds();
+                var newMiddleOrder = middlePricesEnumerator.Current.CloneWithoutIds();
+                var newRightOrder = rightPricesEnumerator.Current.CloneWithoutIds();
+
+                leftCurrentOrders.Add(newLeftOrder);
+                middleCurrentOrders.Add(newMiddleOrder);
+                rightCurrentOrders.Add(newRightOrder);
+
+                // Just return first generated order
+                yield return SynthLimitOrder(newLeftOrder, newMiddleOrder, newRightOrder);
+
+                while (true)
+                {
+                    newLeftOrder = leftPricesEnumerator.MoveNext() ? leftPricesEnumerator.Current.CloneWithoutIds() : null;
+                    newMiddleOrder = middlePricesEnumerator.MoveNext() ? middlePricesEnumerator.Current.CloneWithoutIds() : null;
+                    newRightOrder = rightPricesEnumerator.MoveNext() ? rightPricesEnumerator.Current.CloneWithoutIds() : null;
+
+                    if (newLeftOrder == null && newMiddleOrder == null && newRightOrder == null)
+                        break;
+
+                    var newCurrentLevelOrders = new List<LimitOrder>();
+
+                    var newOrdersWithNewLeftOrder = new List<LimitOrder>();
+                    if (newLeftOrder != null)
+                        foreach (var middleCurrentOrder in newMiddleOrder == null ? middleCurrentOrders : middleCurrentOrders.Concat(newMiddleOrder))
+                            foreach (var rightCurrentOrder in rightCurrentOrders)
+                                newOrdersWithNewLeftOrder.Add(SynthLimitOrder(newLeftOrder, middleCurrentOrder, rightCurrentOrder));
+
+                    var newOrdersWithNewMiddleOrder = new List<LimitOrder>();
+                    if (newMiddleOrder != null)
+                        foreach (var leftCurrentOrder in leftCurrentOrders)
+                            foreach (var rightCurrentOrder in rightCurrentOrders)
+                                newOrdersWithNewMiddleOrder.Add(SynthLimitOrder(leftCurrentOrder, newMiddleOrder, rightCurrentOrder));
+
+                    var newOrdersWithAllMiddleOrders = new List<LimitOrder>();
+                    if (newLeftOrder != null && newRightOrder != null)
+                        foreach (var middleCurrentOrder in newMiddleOrder == null ? middleCurrentOrders : middleCurrentOrders.Concat(newMiddleOrder))
+                            newOrdersWithAllMiddleOrders.Add(SynthLimitOrder(newLeftOrder, middleCurrentOrder, newRightOrder));
+
+                    var newOrdersWithNewRightOrder = new List<LimitOrder>();
+                    if (newRightOrder != null)
+                        foreach (var leftCurrentOrder in leftCurrentOrders)
+                            foreach (var middleCurrentOrder in newMiddleOrder == null ? middleCurrentOrders : middleCurrentOrders.Concat(newMiddleOrder))
+                                newOrdersWithNewRightOrder.Add(SynthLimitOrder(leftCurrentOrder, middleCurrentOrder, newRightOrder));
+
+                    newCurrentLevelOrders.AddRange(newOrdersWithNewLeftOrder);
+                    newCurrentLevelOrders.AddRange(newOrdersWithNewMiddleOrder);
+                    newCurrentLevelOrders.AddRange(newOrdersWithAllMiddleOrders);
+                    newCurrentLevelOrders.AddRange(newOrdersWithNewRightOrder);
+                    var newOrders = newCurrentLevelOrders.OrderBy(x => x.Price, direction);
+                    
+                    foreach (var limitOrder in newOrders)
+                        yield return limitOrder;
+
+                    if (newLeftOrder != null)
+                        leftCurrentOrders.Add(newLeftOrder);
+
+                    if (newMiddleOrder != null)
+                        middleCurrentOrders.Add(newMiddleOrder);
+
+                    if (newRightOrder != null)
+                        rightCurrentOrders.Add(newRightOrder);
+                }
+
+                leftPricesEnumerator.Dispose();
+                middlePricesEnumerator.Dispose();
+                rightPricesEnumerator.Dispose();
             }
         }
 
-        private static IEnumerable<LimitOrder> GetBids(OrderBook orderBook, AssetPair target)
+        public static IEnumerable<LimitOrder> GetBids(OrderBook orderBook, AssetPair target)
         {
             Debug.Assert(orderBook != null);
             Debug.Assert(target != null && target.IsValid());
             Debug.Assert(target.EqualOrReversed(orderBook.AssetPair));
 
+            var bids = orderBook.Bids;
+            var asks = orderBook.Asks;
+
             // Streight
             if (orderBook.AssetPair.Base.Id == target.Base.Id &&
                 orderBook.AssetPair.Quote.Id == target.Quote.Id)
             {
-                for (var i = orderBook.Bids.Count - 1; i >= 0; i--)
+                foreach (var bid in bids)
                 {
-                    var bid = orderBook.Bids[i];
                     yield return bid;
                 }
             }
@@ -324,7 +449,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
             if (orderBook.AssetPair.Base.Id == target.Quote.Id &&
                 orderBook.AssetPair.Quote.Id == target.Base.Id)
             {
-                foreach (var ask in orderBook.Asks)
+                foreach (var ask in asks)
                 {
                     var bid = ask.Reciprocal();
                     yield return bid;
@@ -332,17 +457,20 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
             }
         }
 
-        private static IEnumerable<LimitOrder> GetAsks(OrderBook orderBook, AssetPair target)
+        public static IEnumerable<LimitOrder> GetAsks(OrderBook orderBook, AssetPair target)
         {
             Debug.Assert(orderBook != null);
             Debug.Assert(target != null && target.IsValid());
             Debug.Assert(target.EqualOrReversed(orderBook.AssetPair));
 
+            var bids = orderBook.Bids;
+            var asks = orderBook.Asks;
+
             // Streight
             if (orderBook.AssetPair.Base.Id == target.Base.Id &&
                 orderBook.AssetPair.Quote.Id == target.Quote.Id)
             {
-                foreach (var ask in orderBook.Asks)
+                foreach (var ask in asks)
                 {
                     yield return ask;
                 }
@@ -352,16 +480,15 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
             if (orderBook.AssetPair.Base.Id == target.Quote.Id &&
                 orderBook.AssetPair.Quote.Id == target.Base.Id)
             {
-                for (var i = orderBook.Bids.Count - 1; i >= 0; i--)
+                foreach (var bid in bids)
                 {
-                    var bid = orderBook.Bids[i];
                     var ask = bid.Reciprocal();
                     yield return ask;
                 }
             }
         }
 
-        private static IReadOnlyList<OrderBook> GetOrdered(IReadOnlyCollection<OrderBook> orderBooks, AssetPair target)
+        public static IReadOnlyList<OrderBook> GetOrdered(IReadOnlyCollection<OrderBook> orderBooks, AssetPair target)
         {
             Debug.Assert(orderBooks != null);
             Debug.Assert(orderBooks.Any());
@@ -393,7 +520,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
             return result;
         }
 
-        private static IReadOnlyList<AssetPair> GetChained(IReadOnlyCollection<OrderBook> orderBooks, AssetPair target)
+        public static IReadOnlyList<AssetPair> GetChained(IReadOnlyCollection<OrderBook> orderBooks, AssetPair target)
         {
             Debug.Assert(orderBooks != null);
             Debug.Assert(orderBooks.Any());
@@ -438,26 +565,26 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
             return result;
         }
 
-        private static LimitOrder GetLimitOrder(LimitOrder left, LimitOrder right)
+        private static LimitOrder SynthLimitOrder(LimitOrder left, LimitOrder right)
         {
-            var newBidPrice = left.Price * right.Price;
+            var newPrice = left.Price * right.Price;
             var rightBidVolumeInBaseAsset = right.Volume / left.Price;
-            var newBidVolume = Math.Min(left.Volume, rightBidVolumeInBaseAsset);
+            var newVolume = Math.Min(left.Volume, rightBidVolumeInBaseAsset);
 
-            var result = new LimitOrder(newBidPrice, newBidVolume);
+            var result = new LimitOrder(newPrice, newVolume);
 
             return result;
         }
 
-        private static LimitOrder GetLimitOrder(LimitOrder left, LimitOrder middle, LimitOrder right)
+        private static LimitOrder SynthLimitOrder(LimitOrder left, LimitOrder middle, LimitOrder right)
         {
-            var newBidPrice = left.Price * middle.Price * right.Price;
+            var newPrice = left.Price * middle.Price * right.Price;
             var interimBidPrice = left.Price * middle.Price;
             var interimBidVolumeInBaseAsset = middle.Volume / left.Price;
             var rightBidVolumeInBaseAsset = right.Volume / interimBidPrice;
-            var newBidVolume = Math.Min(Math.Min(left.Volume, interimBidVolumeInBaseAsset), rightBidVolumeInBaseAsset);
+            var newVolume = Math.Min(Math.Min(left.Volume, interimBidVolumeInBaseAsset), rightBidVolumeInBaseAsset);
 
-            var result = new LimitOrder(newBidPrice, newBidVolume);
+            var result = new LimitOrder(newPrice, newVolume);
 
             return result;
         }

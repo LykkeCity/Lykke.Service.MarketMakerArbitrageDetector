@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain;
+using MoreLinq;
 using Xunit;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
@@ -304,6 +306,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
             Assert.Equal(timestamp1, synthOrderBook.Timestamp);
             Assert.Equal(2, synthOrderBook.OriginalOrderBooks.Count);
         }
+
 
 
         [Fact]
@@ -945,6 +948,98 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
 
             AssertChained3(result);
         }
+
+
+        [Fact]
+        public void SynthOrderBook_GetBids_Streight_Test()
+        {
+            var gbpusd = new AssetPair("GBPUSD", "GBPUSD", new Asset("GBP", "GBP"), new Asset("USD", "USD"));
+
+            var gbpusdOb = new OrderBook("FE", gbpusd,
+                new List<LimitOrder> // bids
+                {
+                    new LimitOrder(1.28167m, 2909.98m),
+                    new LimitOrder(1.29906m, 50000m)
+                },
+                new List<LimitOrder>(), // asks
+                DateTime.Now);
+
+            var bids = SynthOrderBook.GetBids(gbpusdOb, gbpusd).ToList();
+            var orderedBids = bids.OrderByDescending(x => x.Price).ToList();
+
+            Assert.Equal(2, bids.Count);
+            Assert.Equal(bids[0].Price, orderedBids[0].Price);
+            Assert.Equal(bids[1].Price, orderedBids[1].Price);
+        }
+
+        [Fact]
+        public void SynthOrderBook_GetBids_Reversed_Test()
+        {
+            var usdgbp = new AssetPair("USDGBP", "USDGBP", new Asset("USD", "USD"), new Asset("GBP", "GBP"));
+            var gbpusd = new AssetPair("GBPUSD", "GBPUSD", new Asset("GBP", "GBP"), new Asset("USD", "USD"));
+
+            var gbpusdOb = new OrderBook("FE", gbpusd,
+                new List<LimitOrder>(), // bids
+                new List<LimitOrder> // asks
+                {
+                    new LimitOrder(1.29906m, 50000m),
+                    new LimitOrder(1.28167m, 2909.98m)
+                },
+                DateTime.Now);
+
+            var bids = SynthOrderBook.GetBids(gbpusdOb, usdgbp).ToList();
+            var orderedBids = bids.OrderByDescending(x => x.Price).ToList();
+
+            Assert.Equal(2, bids.Count);
+            Assert.Equal(bids[0].Price, orderedBids[0].Price);
+            Assert.Equal(bids[1].Price, orderedBids[1].Price);
+        }
+
+        [Fact]
+        public void SynthOrderBook_GetAsks_Streight_Test()
+        {
+            var gbpusd = new AssetPair("GBPUSD", "GBPUSD", new Asset("GBP", "GBP"), new Asset("USD", "USD"));
+
+            var gbpusdOb = new OrderBook("FE", gbpusd,
+                new List<LimitOrder>(), // bids
+                new List<LimitOrder> // asks
+                {
+                    new LimitOrder(1.29906m, 50000m),
+                    new LimitOrder(1.28167m, 2909.98m)
+                },
+                DateTime.Now);
+
+            var bids = SynthOrderBook.GetAsks(gbpusdOb, gbpusd).ToList();
+            var orderedBids = bids.OrderBy(x => x.Price).ToList();
+
+            Assert.Equal(2, bids.Count);
+            Assert.Equal(bids[0].Price, orderedBids[0].Price);
+            Assert.Equal(bids[1].Price, orderedBids[1].Price);
+        }
+
+        [Fact]
+        public void SynthOrderBook_GetAsks_Reversed_Test()
+        {
+            var usdgbp = new AssetPair("USDGBP", "USDGBP", new Asset("USD", "USD"), new Asset("GBP", "GBP"));
+            var gbpusd = new AssetPair("GBPUSD", "GBPUSD", new Asset("GBP", "GBP"), new Asset("USD", "USD"));
+
+            var gbpusdOb = new OrderBook("FE", gbpusd,
+                new List<LimitOrder> // bids
+                {
+                    new LimitOrder(1.28167m, 2909.98m),
+                    new LimitOrder(1.29906m, 50000m)
+                },
+                new List<LimitOrder>(), // asks
+                DateTime.Now);
+
+            var bids = SynthOrderBook.GetAsks(gbpusdOb, usdgbp).ToList();
+            var orderedBids = bids.OrderBy(x => x.Price).ToList();
+
+            Assert.Equal(2, bids.Count);
+            Assert.Equal(bids[0].Price, orderedBids[0].Price);
+            Assert.Equal(bids[1].Price, orderedBids[1].Price);
+        }
+
 
 
         private IReadOnlyCollection<OrderBook> GetOrderBooks(AssetPair assetPair1, AssetPair assetPair2)

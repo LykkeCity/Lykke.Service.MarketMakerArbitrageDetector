@@ -66,7 +66,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                         x.BestBid?.Price,
                         x.BestAsk?.Price,
                         x.BidsVolume,
-                        ConvertToUsd(x.AssetPair.Base.Id, x.BidsVolume), 
+                        ConvertToUsd(x.AssetPair.Base.Id, x.BidsVolume),
                         x.AsksVolume,
                         ConvertToUsd(x.AssetPair.Base.Id, x.AsksVolume),
                         x.Timestamp
@@ -132,7 +132,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
 
             var usd = _assets.Values.Single(x => x.Id == "USD");
             var asset = _assets.Values.Single(x => x.Id == sourceAssetId);
-            
+
             if (sourceAssetId == usd.Id)
                 return 1;
 
@@ -278,7 +278,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
             if (dirtyOrderBook.Asks != null && dirtyOrderBook.Bids != null)
             {
                 var isValid = true;
-                
+
                 // Only if both bids and asks not empty
                 if (dirtyOrderBook.Asks.Any() && dirtyOrderBook.Bids.Any())
                 {

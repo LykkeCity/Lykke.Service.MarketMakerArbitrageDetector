@@ -163,12 +163,13 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                         decimal pnL = 0;
                         string targetSide = null;
 
+                        //TODO: Can be rewritten
                         if (target.BestBid?.Price > synthOrderBook.BestAsk?.Price)
                         {
                             spread = Arbitrage.GetSpread(target.BestBid.Price, synthOrderBook.BestAsk.Price);
                             var volumePnL = Arbitrage.GetArbitrageVolumePnL(target.Bids, synthOrderBook.Asks);
-                            volume = volumePnL?.Volume ?? throw new InvalidOperationException("Every arbitrage must have volume");
-                            pnL = volumePnL?.PnL ?? throw new InvalidOperationException("Every arbitrage must have PnL");
+                            volume = volumePnL?.Volume ?? throw new InvalidOperationException("Every found arbitrage must have volume");
+                            pnL = volumePnL?.PnL ?? throw new InvalidOperationException("Every found arbitrage must have PnL");
                             targetSide = "Bid";
                         }
 
@@ -176,8 +177,8 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                         {
                             spread = Arbitrage.GetSpread(synthOrderBook.BestBid.Price, target.BestAsk.Price);
                             var volumePnL = Arbitrage.GetArbitrageVolumePnL(synthOrderBook.Bids, target.Asks);
-                            volume = volumePnL?.Volume ?? throw new InvalidOperationException("Every arbitrage must have volume");
-                            pnL = volumePnL?.PnL ?? throw new InvalidOperationException("Every arbitrage must have PnL");
+                            volume = volumePnL?.Volume ?? throw new InvalidOperationException("Every found arbitrage must have volume");
+                            pnL = volumePnL?.PnL ?? throw new InvalidOperationException("Every found arbitrage must have PnL");
                             targetSide = "Ask";
                         }
 

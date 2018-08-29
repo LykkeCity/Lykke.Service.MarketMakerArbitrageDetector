@@ -75,6 +75,46 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
         }
 
         [Fact]
+        public void ArbitrageVolumePnL_Simple2_Test()
+        {
+            var eurgbp = new AssetPair("EURGBP", "EURGBP", new Asset("EUR", "EUR"), new Asset("GBP", "GBP"));
+            var eurusd = new AssetPair("EURUSD", "EURUSD", new Asset("EUR", "EUR"), new Asset("USD", "USD"));
+            var gbpusd = new AssetPair("GBPUSD", "GBPUSD", new Asset("GBP", "GBP"), new Asset("USD", "USD"));
+
+            var eurgbpOB = new OrderBook("FE", eurgbp,
+                new List<LimitOrder> (), // bids
+                new List<LimitOrder> // asks
+                {
+                    new LimitOrder(0.90477m, 757921.29m)
+                },
+                DateTime.Now);
+
+            var eurusdOB = new OrderBook("FE", eurusd,
+                new List<LimitOrder> // bids
+                {
+                    new LimitOrder(1.16211m, 1923.11m),
+                    new LimitOrder(0.58117m, 100)
+                },
+                new List<LimitOrder>(), // asks
+                DateTime.Now);
+
+            var gbpusdOB = new OrderBook("FE", gbpusd,
+                new List<LimitOrder>(), // bids
+                new List<LimitOrder> // asks
+                {
+                    new LimitOrder(1.28167m, 2909.98m), // 0.78023, 3729.63406 (reciprocal)
+                    new LimitOrder(1.29906m, 50000m)    // 0.76978, 64953.0 (reciprocal)
+                },
+                DateTime.Now);
+
+            var eurgbpSynth = SynthOrderBook.FromOrderBooks(eurusdOB, gbpusdOB, eurgbp);
+
+            var volumePnL = Arbitrage.GetArbitrageVolumePnL(eurgbpSynth.Bids, eurgbpOB.Asks);
+            Assert.NotNull(volumePnL?.Volume);
+            Assert.NotNull(volumePnL?.PnL);
+        }
+
+        [Fact]
         public void ArbitrageVolumePnL_Complex1_Test()
         {
             // https://docs.google.com/spreadsheets/d/1plnbQSS-WP6ykTv8wIi_hbAhk_aSz_tllXFIE3jhFpU/edit#gid=0
