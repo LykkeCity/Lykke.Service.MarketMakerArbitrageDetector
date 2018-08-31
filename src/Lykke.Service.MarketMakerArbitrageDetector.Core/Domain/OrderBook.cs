@@ -8,7 +8,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 {
     public class OrderBook
     {
-        public virtual string Exchange { get; }
+        public string Exchange { get; }
 
         public AssetPair AssetPair { get; private set; }
 
@@ -27,7 +27,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
         public DateTime Timestamp { get; }
 
 
-        public OrderBook(string exchange, AssetPair assetPair, IReadOnlyList<LimitOrder> bids, IReadOnlyList<LimitOrder> asks, DateTime timestamp)
+        public OrderBook(string exchange, AssetPair assetPair, IEnumerable<LimitOrder> bids, IEnumerable<LimitOrder> asks, DateTime timestamp)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(exchange));
             Debug.Assert(assetPair != null);
@@ -44,19 +44,19 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
             AssetPair = assetPair;
         }
 
-        public OrderBook Reverse()
+        public OrderBook Invert()
         {
             var newBids = Asks.Select(x => x.Reciprocal()).ToList();
             var newAsks = Bids.Select(x => x.Reciprocal()).ToList();
 
-            var result = new OrderBook(Exchange, AssetPair.Reverse(), newBids, newAsks, Timestamp);
+            var result = new OrderBook(Exchange, AssetPair.Invert(), newBids, newAsks, Timestamp);
 
             return result;
         }
 
         public override string ToString()
         {
-            return $"{Exchange} - {AssetPair}, Bids: {Bids.Count}, Asks: {Asks.Count}, BestBid: {BestBid?.Price}, BestAsk: {BestAsk?.Price}, Timestamp: {Timestamp}";
+            return $"{Exchange} - {AssetPair}, Bids: {Bids.Count()}, Asks: {Asks.Count()}, BestBid: {BestBid?.Price}, BestAsk: {BestAsk?.Price}, Timestamp: {Timestamp}";
         }
     }
 }

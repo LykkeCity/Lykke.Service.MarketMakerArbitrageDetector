@@ -8,7 +8,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
 {
     public class OrderBookTests
     {
-        private readonly AssetPair _btcusd = new AssetPair("BTCUSD", "BTCUSD", new Asset("BTC", "BTC"), new Asset("USD", "USD"));
+        private readonly AssetPair _btcusd = new AssetPair("BTCUSD", "BTCUSD", new Asset("BTC", "BTC"), new Asset("USD", "USD"), 8, 8);
 
         [Fact]
         public void SetAssetPairTest()
@@ -36,10 +36,10 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
         }
 
         [Fact]
-        public void ReverseTest()
+        public void InvertTest()
         {
             const string exchangeName = "FakeExchange";
-            const string reversedPair = "USDBTC";
+            const string invertedPair = "USDBTC";
             var timestamp = DateTime.UtcNow;
 
             var orderBook = new OrderBook(exchangeName, _btcusd,
@@ -53,26 +53,26 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 },
                 timestamp);
 
-            var reversed = orderBook.Reverse();
-            Assert.NotNull(reversed);
-            Assert.Equal(exchangeName, reversed.Exchange);
-            Assert.Equal(reversedPair, reversed.AssetPair.Name);
-            Assert.Equal(orderBook.Bids.Count, reversed.Asks.Count);
-            Assert.Equal(orderBook.Asks.Count, reversed.Bids.Count);
+            var inverted = orderBook.Invert();
+            Assert.NotNull(inverted);
+            Assert.Equal(exchangeName, inverted.Exchange);
+            Assert.Equal(invertedPair, inverted.AssetPair.Name);
+            Assert.Equal(orderBook.Bids.Count(), inverted.Asks.Count());
+            Assert.Equal(orderBook.Asks.Count(), inverted.Bids.Count());
 
-            var bidLimitOrder1 = reversed.Bids.Single(x => x.Volume == 26700.37037031m);
-            var bidLimitOrder2 = reversed.Bids.Single(x => x.Volume == 62999.65m);
-            var bidLimitOrder3 = reversed.Bids.Single(x => x.Volume == 90000);
+            var bidLimitOrder1 = inverted.Bids.Single(x => x.Volume == 26700.37037031m);
+            var bidLimitOrder2 = inverted.Bids.Single(x => x.Volume == 62999.65m);
+            var bidLimitOrder3 = inverted.Bids.Single(x => x.Volume == 90000);
             Assert.Equal(bidLimitOrder1.Price, 1 / 8900.12345677m, 8);
             Assert.Equal(bidLimitOrder2.Price, 1 / 8999.95m, 8);
             Assert.Equal(bidLimitOrder3.Price, 1 / 9000m, 8);
 
-            var askLimitOrder1 = reversed.Asks.Single(x => x.Volume == 79425);
-            var askLimitOrder2 = reversed.Asks.Single(x => x.Volume == 44115);
+            var askLimitOrder1 = inverted.Asks.Single(x => x.Volume == 79425);
+            var askLimitOrder2 = inverted.Asks.Single(x => x.Volume == 44115);
             Assert.Equal(askLimitOrder1.Price, 1 / 8825m, 8);
             Assert.Equal(askLimitOrder2.Price, 1 / 8823m, 8);
 
-            Assert.Equal(timestamp, reversed.Timestamp);
+            Assert.Equal(timestamp, inverted.Timestamp);
         }
     }
 }

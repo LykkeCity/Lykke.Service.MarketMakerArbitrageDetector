@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 {
@@ -61,7 +60,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
             return Math.Round((askPrice - bidPrice) / bidPrice * 100, 2);
         }
 
-        public static (decimal Volume, decimal PnL)? GetArbitrageVolumePnL(IEnumerable<LimitOrder> orderedBids, IEnumerable<LimitOrder> orderedAsks)
+        public static (decimal Volume, decimal PnL)? GetArbitrageVolumeAndPnL(IEnumerable<LimitOrder> orderedBids, IEnumerable<LimitOrder> orderedAsks)
         {
             Debug.Assert(orderedBids != null);
             Debug.Assert(orderedAsks != null);

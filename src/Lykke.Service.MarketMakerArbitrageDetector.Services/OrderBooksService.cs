@@ -136,7 +136,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
             if (sourceAssetId == usd.Id)
                 return 1;
 
-            // Get with the shortest id because it can be EURUSD and EURUSD.CY
+            // Get with the shortest id because it can be EURUSD and EURUSD.cy
             var assetPair = _assetPairs.Values.Where(x => x.Base.Id == asset.Id && x.Quote.Id == usd.Id).OrderBy(x => x.Id).FirstOrDefault();
             if (assetPair != null)
             {
@@ -202,7 +202,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                 if (baseAsset == null || quoteAsset == null)
                     continue;
 
-                _assetPairs[assetPair.Id] = new AssetPair(assetPair.Id, baseAsset.Name + quoteAsset.Name, baseAsset, quoteAsset);
+                _assetPairs[assetPair.Id] = new AssetPair(assetPair.Id, baseAsset.Name + quoteAsset.Name, baseAsset, quoteAsset, assetPair.Accuracy, assetPair.InvertedAccuracy);
             }
 
             _log.Info($"Initialized {_assetPairs.Count} of {assetPairs.Count} asset pairs.");
@@ -299,17 +299,17 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
             var result = new Dictionary<string, string>();
 
             var wallets = _settingsService.Get().Wallets;
-            var clientIds = wallets.Keys;
+            var walletIds = wallets.Keys;
 
             if (!wallets.Any())
                 return result;
 
-            var bidsClientsIds = orderBook.Bids.Select(x => x.ClientId).Intersect(clientIds);
-            var asksClientIds = orderBook.Asks.Select(x => x.ClientId).Intersect(clientIds);
-            var allFoundClientIds = bidsClientsIds.Union(asksClientIds);
+            var bidsWalletIds = orderBook.Bids.Select(x => x.WalletId).Intersect(walletIds);
+            var asksWalletIds = orderBook.Asks.Select(x => x.WalletId).Intersect(walletIds);
+            var allFoundWalletIds = bidsWalletIds.Union(asksWalletIds);
 
-            foreach (var clientId in allFoundClientIds)
-                result[clientId] = wallets[clientId];
+            foreach (var walletId in allFoundWalletIds)
+                result[walletId] = wallets[walletId];
 
             return result;
         }

@@ -7,53 +7,53 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
     {
         private readonly Asset _btc = new Asset("BTC", "BTC");
         private readonly Asset _usd = new Asset("USD", "USD");
-        private readonly AssetPair _assetPair = new AssetPair("BTCUSD", "BTCUSD", new Asset("BTC", "BTC"), new Asset("USD", "USD"));
+        private readonly AssetPair _btcusd = new AssetPair("BTCUSD", "BTCUSD", new Asset("BTC", "BTC"), new Asset("USD", "USD"), 8, 8);
 
         [Fact]
-        public void AssetPairReverseTest()
+        public void AssetPairInvertTest()
         {
-            var reversed = _assetPair.Reverse();
+            var inverted = _btcusd.Invert();
 
-            Assert.Equal(_btc.Id, reversed.Quote.Id);
-            Assert.Equal(_usd.Id, reversed.Base.Id);
+            Assert.Equal(_btc.Id, inverted.Quote.Id);
+            Assert.Equal(_usd.Id, inverted.Base.Id);
         }
 
         [Fact]
-        public void AssetPairIsReversedTest()
+        public void AssetPairIsInvertedTest()
         {
-            var reversed = _assetPair.Reverse();
+            var inverted = _btcusd.Invert();
 
-            Assert.True(_assetPair.IsReversed(reversed));
-            Assert.True(reversed.IsReversed(_assetPair));
+            Assert.True(_btcusd.IsInverted(inverted));
+            Assert.True(inverted.IsInverted(_btcusd));
         }
 
         [Fact]
         public void AssetPairIsEqualTest()
         {
-            var equalAssetPair = new AssetPair("BTCUSD", "BTCUSD", new Asset("BTC", "BTC"), new Asset("USD", "USD"));
+            var equalAssetPair = new AssetPair("BTCUSD", "BTCUSD", new Asset("BTC", "BTC"), new Asset("USD", "USD"), 8, 8);
 
-            Assert.True(_assetPair.Equals(equalAssetPair));
-            Assert.True(equalAssetPair.Equals(_assetPair));
+            Assert.True(_btcusd.Equals(equalAssetPair));
+            Assert.True(equalAssetPair.Equals(_btcusd));
         }
 
         [Fact]
-        public void AssetPairIsEqualOrReversedTest()
+        public void AssetPairIsEqualOrInvertedTest()
         {
-            var equalAssetPair = new AssetPair("BTCUSD", "BTCUSD", new Asset("BTC", "BTC"), new Asset("USD", "USD"));
-            var reversed = _assetPair.Reverse();
+            var equalAssetPair = new AssetPair("BTCUSD", "BTCUSD", new Asset("BTC", "BTC"), new Asset("USD", "USD"), 8, 8);
+            var inverted = _btcusd.Invert();
 
-            Assert.True(_assetPair.EqualOrReversed(equalAssetPair));
-            Assert.True(equalAssetPair.EqualOrReversed(_assetPair));
-            Assert.True(_assetPair.EqualOrReversed(reversed));
-            Assert.True(reversed.EqualOrReversed(_assetPair));
+            Assert.True(_btcusd.EqualOrInverted(equalAssetPair));
+            Assert.True(equalAssetPair.EqualOrInverted(_btcusd));
+            Assert.True(_btcusd.EqualOrInverted(inverted));
+            Assert.True(inverted.EqualOrInverted(_btcusd));
         }
 
         [Fact]
         public void AssetPairContainsTest()
         {
-            Assert.True(_assetPair.ContainsAsset("BTC"));
-            Assert.True(_assetPair.ContainsAsset("USD"));
-            Assert.False(_assetPair.ContainsAsset("EUR"));
+            Assert.True(_btcusd.ContainsAsset("BTC"));
+            Assert.True(_btcusd.ContainsAsset("USD"));
+            Assert.False(_btcusd.ContainsAsset("EUR"));
         }
     }
 }

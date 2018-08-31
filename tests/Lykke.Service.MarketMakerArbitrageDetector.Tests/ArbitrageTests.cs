@@ -7,17 +7,22 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
 {
     public class ArbitrageTests
     {
+        private readonly AssetPair _btcusd = GetAssetPair("BTC", "USD");
+        private readonly AssetPair _eurgbp = GetAssetPair("EUR", "GBP");
+        private readonly AssetPair _eurusd = GetAssetPair("EUR", "USD");
+        private readonly AssetPair _gbpusd = GetAssetPair("GBP", "USD");
+
+
         [Fact]
         public void ArbitrageVolume_NoArbitrage_EmptyOrderBooks_Test()
         {
             const string exchangeName = "FE";
-            var assetPair = new AssetPair("BTCUSD", "BTCUSD", new Asset("BTC", "BTC"), new Asset("USD", "USD"));
             var timestamp = DateTime.UtcNow;
 
-            var orderBook1 = new OrderBook(exchangeName, assetPair, new List<LimitOrder>(), new List<LimitOrder>(), timestamp);
-            var orderBook2 = new OrderBook(exchangeName, assetPair, new List<LimitOrder>(), new List<LimitOrder>(), timestamp);
+            var orderBook1 = new OrderBook(exchangeName, _btcusd, new List<LimitOrder>(), new List<LimitOrder>(), timestamp);
+            var orderBook2 = new OrderBook(exchangeName, _btcusd, new List<LimitOrder>(), new List<LimitOrder>(), timestamp);
 
-            var volume = Arbitrage.GetArbitrageVolumePnL(orderBook1.Bids, orderBook2.Asks);
+            var volume = Arbitrage.GetArbitrageVolumeAndPnL(orderBook1.Bids, orderBook2.Asks);
             Assert.Null(volume);
         }
 
@@ -25,7 +30,6 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
         public void ArbitrageVolume_NoArbitrage_TheSameOrderBook_Test()
         {
             const string exchangeName = "FE";
-            var assetPair = new AssetPair("BTCUSD", "BTCUSD", new Asset("BTC", "BTC"), new Asset("USD", "USD"));
             var timestamp = DateTime.UtcNow;
 
             var bids = new List<LimitOrder>
@@ -40,10 +44,10 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 new LimitOrder("", "", 8900.12345677m, 3)
             };
 
-            var orderBook1 = new OrderBook(exchangeName, assetPair, bids, asks, timestamp);
-            var orderBook2 = new OrderBook(exchangeName, assetPair, bids, asks, timestamp);
+            var orderBook1 = new OrderBook(exchangeName, _btcusd, bids, asks, timestamp);
+            var orderBook2 = new OrderBook(exchangeName, _btcusd, bids, asks, timestamp);
 
-            var volume = Arbitrage.GetArbitrageVolumePnL(orderBook1.Bids, orderBook2.Asks);
+            var volume = Arbitrage.GetArbitrageVolumeAndPnL(orderBook1.Bids, orderBook2.Asks);
             Assert.Null(volume);
         }
 
@@ -51,7 +55,6 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
         public void ArbitrageVolumePnL_Simple1_Test()
         {
             const string exchangeName = "FE";
-            var assetPair = new AssetPair("BTCUSD", "BTCUSD", new Asset("BTC", "BTC"), new Asset("USD", "USD"));
             var timestamp = DateTime.UtcNow;
 
             var bids = new List<LimitOrder>
@@ -66,10 +69,10 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 new LimitOrder("", "", 8900.12345677m, 3) // <-
             };
 
-            var bidsOrderBook = new OrderBook(exchangeName, assetPair, bids, new List<LimitOrder>(), timestamp);
-            var asksOrderBook = new OrderBook(exchangeName, assetPair, new List<LimitOrder>(), asks, timestamp);
+            var bidsOrderBook = new OrderBook(exchangeName, _btcusd, bids, new List<LimitOrder>(), timestamp);
+            var asksOrderBook = new OrderBook(exchangeName, _btcusd, new List<LimitOrder>(), asks, timestamp);
 
-            var volumePnL = Arbitrage.GetArbitrageVolumePnL(bidsOrderBook.Bids, asksOrderBook.Asks);
+            var volumePnL = Arbitrage.GetArbitrageVolumeAndPnL(bidsOrderBook.Bids, asksOrderBook.Asks);
             Assert.Equal(9, volumePnL?.Volume);
             Assert.Equal(299.92962969m, volumePnL?.PnL);
         }
@@ -77,11 +80,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
         [Fact]
         public void ArbitrageVolumePnL_Simple2_Test()
         {
-            var eurgbp = new AssetPair("EURGBP", "EURGBP", new Asset("EUR", "EUR"), new Asset("GBP", "GBP"));
-            var eurusd = new AssetPair("EURUSD", "EURUSD", new Asset("EUR", "EUR"), new Asset("USD", "USD"));
-            var gbpusd = new AssetPair("GBPUSD", "GBPUSD", new Asset("GBP", "GBP"), new Asset("USD", "USD"));
-
-            var eurgbpOB = new OrderBook("FE", eurgbp,
+            var eurgbpOB = new OrderBook("FE", _eurgbp,
                 new List<LimitOrder> (), // bids
                 new List<LimitOrder> // asks
                 {
@@ -89,7 +88,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 },
                 DateTime.Now);
 
-            var eurusdOB = new OrderBook("FE", eurusd,
+            var eurusdOB = new OrderBook("FE", _eurusd,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(1.16211m, 1923.11m),
@@ -98,7 +97,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 new List<LimitOrder>(), // asks
                 DateTime.Now);
 
-            var gbpusdOB = new OrderBook("FE", gbpusd,
+            var gbpusdOB = new OrderBook("FE", _gbpusd,
                 new List<LimitOrder>(), // bids
                 new List<LimitOrder> // asks
                 {
@@ -107,9 +106,9 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 },
                 DateTime.Now);
 
-            var eurgbpSynth = SynthOrderBook.FromOrderBooks(eurusdOB, gbpusdOB, eurgbp);
+            var eurgbpSynth = SynthOrderBook.FromOrderBooks(eurusdOB, gbpusdOB, _eurgbp);
 
-            var volumePnL = Arbitrage.GetArbitrageVolumePnL(eurgbpSynth.Bids, eurgbpOB.Asks);
+            var volumePnL = Arbitrage.GetArbitrageVolumeAndPnL(eurgbpSynth.Bids, eurgbpOB.Asks);
             Assert.NotNull(volumePnL?.Volume);
             Assert.NotNull(volumePnL?.PnL);
         }
@@ -120,7 +119,6 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
             // https://docs.google.com/spreadsheets/d/1plnbQSS-WP6ykTv8wIi_hbAhk_aSz_tllXFIE3jhFpU/edit#gid=0
 
             const string exchangeName = "FE";
-            var assetPair = new AssetPair("BTCUSD", "BTCUSD", new Asset("BTC", "BTC"), new Asset("USD", "USD"));
             var timestamp = DateTime.UtcNow;
 
             var bids = new List<LimitOrder>
@@ -142,10 +140,10 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 new LimitOrder("", "", 500, 10)  // <-
             };
 
-            var bidsOrderBook = new OrderBook(exchangeName, assetPair, bids, new List<LimitOrder>(), timestamp);
-            var asksOrderBook = new OrderBook(exchangeName, assetPair, new List<LimitOrder>(), asks, timestamp);
+            var bidsOrderBook = new OrderBook(exchangeName, _btcusd, bids, new List<LimitOrder>(), timestamp);
+            var asksOrderBook = new OrderBook(exchangeName, _btcusd, new List<LimitOrder>(), asks, timestamp);
 
-            var volumePnL = Arbitrage.GetArbitrageVolumePnL(bidsOrderBook.Bids, asksOrderBook.Asks);
+            var volumePnL = Arbitrage.GetArbitrageVolumeAndPnL(bidsOrderBook.Bids, asksOrderBook.Asks);
             Assert.Equal(41, volumePnL?.Volume);
             Assert.Equal(6450, volumePnL?.PnL);
         }
@@ -155,7 +153,6 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
         {
             // https://docs.google.com/spreadsheets/d/1plnbQSS-WP6ykTv8wIi_hbAhk_aSz_tllXFIE3jhFpU/edit#gid=2011486790
             const string exchangeName = "FE";
-            var assetPair = new AssetPair("BTCUSD", "BTCUSD", new Asset("BTC", "BTC"), new Asset("USD", "USD"));
             var timestamp = DateTime.UtcNow;
 
             var bids = new List<LimitOrder>
@@ -187,12 +184,18 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 new LimitOrder("", "", 1.1m, 10),
             };
 
-            var bidsOrderBook = new OrderBook(exchangeName, assetPair, bids, new List<LimitOrder>(), timestamp);
-            var asksOrderBook = new OrderBook(exchangeName, assetPair, new List<LimitOrder>(), asks, timestamp);
+            var bidsOrderBook = new OrderBook(exchangeName, _btcusd, bids, new List<LimitOrder>(), timestamp);
+            var asksOrderBook = new OrderBook(exchangeName, _btcusd, new List<LimitOrder>(), asks, timestamp);
 
-            var volumePnL = Arbitrage.GetArbitrageVolumePnL(bidsOrderBook.Bids, asksOrderBook.Asks);
+            var volumePnL = Arbitrage.GetArbitrageVolumeAndPnL(bidsOrderBook.Bids, asksOrderBook.Asks);
             Assert.Equal(70, volumePnL?.Volume);
             Assert.Equal(40.4m, volumePnL?.PnL);
+        }
+
+
+        private static AssetPair GetAssetPair(string @base, string quote)
+        {
+            return new AssetPair($"{@base}{quote}", $"{@base}{quote}", new Asset(@base, @base), new Asset(quote, quote), 8, 8);
         }
     }
 }

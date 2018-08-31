@@ -68,7 +68,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.RabbitMQ.Subscribers
             try
             {
                 var limitOrders = message.LimitOrders
-                    .Select(o => new LimitOrder(o.Id, o.ClientId, o.Price, Math.Abs(o.Volume)))
+                    .Select(o => new LimitOrder(o.Id, o.WalletId, o.Price, Math.Abs(o.Volume)))
                     .Where(x => x.Price > 0 && x.Volume > 0) // Filter out negative and zero prices and volumes
                     .ToList();
 

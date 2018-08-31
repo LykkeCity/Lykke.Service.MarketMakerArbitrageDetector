@@ -4,7 +4,7 @@
     {
         public string OrderId { get; set; }
 
-        public string ClientId { get; set; }
+        public string WalletId { get; set; }
 
         public decimal Price { get; set; }
 
@@ -12,7 +12,7 @@
 
         public override string ToString()
         {
-            return $"Price: {Price}, Volume: {Volume}, OrderId: {OrderId}, ClientId: {ClientId}";
+            return $"Price: {Price}, Volume: {Volume}, OrderId: {OrderId}, WalletId: {WalletId}";
         }
     }
 }

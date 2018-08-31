@@ -12,6 +12,10 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
         public Asset Base { get; }
 
         public Asset Quote { get; }
+
+        public int Accuracy { get; }
+
+        public int InvertedAccuracy { get; }
         
 
         public AssetPair(string id)
@@ -19,12 +23,14 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
             Id = id;
         }
 
-        public AssetPair(string id, string name, Asset @base, Asset quote)
+        public AssetPair(string id, string name, Asset @base, Asset quote, int accuracy, int invertedAccuracy)
         {
             Id = id;
             Name = name;
             Base = @base;
             Quote = quote;
+            Accuracy = accuracy;
+            InvertedAccuracy = invertedAccuracy;
         }
 
         public bool IsValid()
@@ -33,14 +39,14 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
                    Base != null && Base.IsValid() && Quote != null && Quote.IsValid();
         }
 
-        public AssetPair Reverse()
+        public AssetPair Invert()
         {
             Debug.Assert(IsValid());
 
-            return new AssetPair(Id, Quote.Name + Base.Name, Quote, Base);
+            return new AssetPair(Id, Quote.Name + Base.Name, Quote, Base, InvertedAccuracy, Accuracy);
         }
 
-        public bool IsReversed(AssetPair other)
+        public bool IsInverted(AssetPair other)
         {
             Debug.Assert(IsValid());
             Debug.Assert(other.IsValid());
@@ -48,12 +54,12 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
             return Base.Id == other.Quote.Id && Quote.Id == other.Base.Id;
         }
 
-        public bool EqualOrReversed(AssetPair other)
+        public bool EqualOrInverted(AssetPair other)
         {
             Debug.Assert(IsValid());
             Debug.Assert(other.IsValid());
 
-            return Equals(other) || IsReversed(other);
+            return Equals(other) || IsInverted(other);
         }
 
         public bool ContainsAsset(string assetId)

@@ -1,10 +1,13 @@
-﻿namespace Lykke.Service.MarketMakerArbitrageDetector.RabbitMQ.Models
+﻿using Newtonsoft.Json;
+
+namespace Lykke.Service.MarketMakerArbitrageDetector.RabbitMQ.Models
 {
     public class LykkeLimitOrder
     {
         public string Id { get; set; }
 
-        public string ClientId { get; set; }
+        [JsonProperty("ClientId")]
+        public string WalletId { get; set; }
 
         public decimal Price { get; set; }
 

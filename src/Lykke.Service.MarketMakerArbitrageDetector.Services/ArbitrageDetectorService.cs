@@ -167,7 +167,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                         if (target.BestBid?.Price > synthOrderBook.BestAsk?.Price)
                         {
                             spread = Arbitrage.GetSpread(target.BestBid.Price, synthOrderBook.BestAsk.Price);
-                            var volumePnL = Arbitrage.GetArbitrageVolumePnL(target.Bids, synthOrderBook.Asks);
+                            var volumePnL = Arbitrage.GetArbitrageVolumeAndPnL(target.Bids, synthOrderBook.Asks);
                             volume = volumePnL?.Volume ?? throw new InvalidOperationException("Every found arbitrage must have volume");
                             pnL = volumePnL?.PnL ?? throw new InvalidOperationException("Every found arbitrage must have PnL");
                             targetSide = "Bid";
@@ -176,7 +176,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                         if (synthOrderBook.BestBid?.Price > target.BestAsk?.Price)
                         {
                             spread = Arbitrage.GetSpread(synthOrderBook.BestBid.Price, target.BestAsk.Price);
-                            var volumePnL = Arbitrage.GetArbitrageVolumePnL(synthOrderBook.Bids, target.Asks);
+                            var volumePnL = Arbitrage.GetArbitrageVolumeAndPnL(synthOrderBook.Bids, target.Asks);
                             volume = volumePnL?.Volume ?? throw new InvalidOperationException("Every found arbitrage must have volume");
                             pnL = volumePnL?.PnL ?? throw new InvalidOperationException("Every found arbitrage must have PnL");
                             targetSide = "Ask";
@@ -236,8 +236,8 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
             
             foreach (var orderBook in allOrderBooks)
             {
-                var newBids = orderBook.Bids.Where(x => wallets.Keys.Contains(x.ClientId)).ToList();
-                var newAsks = orderBook.Asks.Where(x => wallets.Keys.Contains(x.ClientId)).ToList();
+                var newBids = orderBook.Bids.Where(x => wallets.Keys.Contains(x.WalletId)).ToList();
+                var newAsks = orderBook.Asks.Where(x => wallets.Keys.Contains(x.WalletId)).ToList();
 
                 if (!newBids.Any() && !newAsks.Any())
                     continue;
