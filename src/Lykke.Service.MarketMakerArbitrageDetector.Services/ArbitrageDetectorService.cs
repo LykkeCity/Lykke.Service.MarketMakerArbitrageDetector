@@ -96,9 +96,9 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                 }
             }
 
-            result = result.OrderByDescending(x => x.Spread)
+            result = result.OrderBy(x => x.Spread)
                            .ThenByDescending(x => x.PnLInUsd)
-                           .ThenBy(x => x.VolumeInUsd)
+                           .ThenByDescending(x => x.VolumeInUsd)
                            .ToList();
 
             return result;
@@ -208,10 +208,10 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
             }
 
             watch.Stop();
-            //if (watch.ElapsedMilliseconds > 1000)
+            if (watch.ElapsedMilliseconds > 1000)
                 _log.Info($"{watch.ElapsedMilliseconds} ms, {result.Count} arbitrages, {orderBooks.Count} order books, {synthsCount} synthetic order books created.");
 
-            return result.OrderByDescending(x => x.PnL).ToList();
+            return result.ToList();
         }
 
         private void RefreshArbitrages(IEnumerable<Arbitrage> lykkeArbitrages)
