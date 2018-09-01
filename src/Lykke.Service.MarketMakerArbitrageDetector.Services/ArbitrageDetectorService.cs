@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Autofac;
 using Common;
 using Common.Log;
+using JetBrains.Annotations;
 using Lykke.Common.Log;
 using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain;
 using Lykke.Service.MarketMakerArbitrageDetector.Core.Services;
@@ -27,7 +28,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
         public ArbitrageDetectorService(ISettingsService settingsService, IOrderBooksService orderBooksService, ILogFactory logFactory)
         {
             _settingsService = settingsService;
-            _orderBooksService = orderBooksService ?? throw new ArgumentNullException(nameof(orderBooksService));
+            _orderBooksService = orderBooksService;
             _log = logFactory.CreateLog(this);
 
             var executionInterval = _settingsService.Get().ExecutionInterval;
@@ -46,7 +47,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
 
             // Filter by target
             if (!string.IsNullOrWhiteSpace(target))
-                copy = copy.Where(x => x.Target.Name.Equals(target, StringComparison.OrdinalIgnoreCase)).ToList();
+                copy = copy.Where(x => x.Target.Name.Equals(target, StringComparison.InvariantCultureIgnoreCase)).ToList();
 
             var groupedByTarget = copy.GroupBy(x => x.Target);
             foreach (var targetPairArbitrages in groupedByTarget)
@@ -57,7 +58,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                 if (string.IsNullOrWhiteSpace(target))
                 {
                     // Best arbitrage for each target
-                    var bestByProperty = targetArbitrages.MaxBy(x => x.PnL);
+                    var bestByProperty = targetArbitrages.MinBy(x => x.Spread);
                     bestByProperty.SourcesCount = targetArbitrages.Count;
                     result.Add(bestByProperty);
                 }
@@ -74,7 +75,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                         {
                             // Best arbitrage by target and source
                             var targetGrouped = group.ToList();
-                            var bestByProperty = targetGrouped.MaxBy(x => x.PnL);
+                            var bestByProperty = targetGrouped.MinBy(x => x.Spread);
                             bestByProperty.SynthsCount = targetGrouped.Count;
                             result.Add(bestByProperty);
                         }
@@ -83,7 +84,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                     else
                     {
                         // Filter by source
-                        targetArbitrages = targetArbitrages.Where(x => x.Source.Name.Equals(source, StringComparison.OrdinalIgnoreCase)).ToList();
+                        targetArbitrages = targetArbitrages.Where(x => x.Source.Name.Equals(source, StringComparison.InvariantCultureIgnoreCase)).ToList();
 
                         var groupedBySource = targetArbitrages.GroupBy(x => x.Source);
                         foreach (var baseSourcePairsArbitrages in groupedBySource)
@@ -95,9 +96,9 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                 }
             }
 
-            result = result.OrderByDescending(x => x.PnLInUsd)
-                           .ThenByDescending(x => x.VolumeInUsd)
-                           .ThenBy(x => x.Spread)
+            result = result.OrderByDescending(x => x.Spread)
+                           .ThenByDescending(x => x.PnLInUsd)
+                           .ThenBy(x => x.VolumeInUsd)
                            .ToList();
 
             return result;
@@ -133,7 +134,6 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
             var watch = Stopwatch.StartNew();
 
             var synthsCount = 0;
-            var totalItarations = 0;
             // O( (n^2)/2 )
             for (var i = 0; i < orderBooks.Count; i++)
             {
@@ -156,33 +156,32 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                     // Compare each synthetic with target
                     foreach (var synthOrderBook in synthOrderBooks)
                     {
-                        totalItarations++;
-
                         decimal spread = 0;
                         decimal volume = 0;
                         decimal pnL = 0;
                         string targetSide = null;
 
-                        //TODO: Can be rewritten
                         if (target.BestBid?.Price > synthOrderBook.BestAsk?.Price)
                         {
                             spread = Arbitrage.GetSpread(target.BestBid.Price, synthOrderBook.BestAsk.Price);
                             var volumePnL = Arbitrage.GetArbitrageVolumeAndPnL(target.Bids, synthOrderBook.Asks);
-                            volume = volumePnL?.Volume ?? throw new InvalidOperationException("Every found arbitrage must have volume");
-                            pnL = volumePnL?.PnL ?? throw new InvalidOperationException("Every found arbitrage must have PnL");
                             targetSide = "Bid";
+
+                            Debug.Assert(volumePnL?.Volume != null);
+                            Debug.Assert(volumePnL?.PnL != null);
                         }
 
                         if (synthOrderBook.BestBid?.Price > target.BestAsk?.Price)
                         {
                             spread = Arbitrage.GetSpread(synthOrderBook.BestBid.Price, target.BestAsk.Price);
                             var volumePnL = Arbitrage.GetArbitrageVolumeAndPnL(synthOrderBook.Bids, target.Asks);
-                            volume = volumePnL?.Volume ?? throw new InvalidOperationException("Every found arbitrage must have volume");
-                            pnL = volumePnL?.PnL ?? throw new InvalidOperationException("Every found arbitrage must have PnL");
                             targetSide = "Ask";
+
+                            Debug.Assert(volumePnL?.Volume != null);
+                            Debug.Assert(volumePnL?.PnL != null);
                         }
 
-                        if (string.IsNullOrWhiteSpace(targetSide)) // no arbitrages
+                        if (targetSide == null) // no arbitrages
                             continue;
 
                         var volumeInUsd = _orderBooksService.ConvertToUsd(target.AssetPair.Base.Id, volume);
@@ -209,8 +208,8 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
             }
 
             watch.Stop();
-            if (watch.ElapsedMilliseconds > 1000)
-                _log.Info($"{watch.ElapsedMilliseconds} ms, {result.Count} arbitrages, {orderBooks.Count} order books, {synthsCount} synthetic order books created, {totalItarations} iterations.");
+            //if (watch.ElapsedMilliseconds > 1000)
+                _log.Info($"{watch.ElapsedMilliseconds} ms, {result.Count} arbitrages, {orderBooks.Count} order books, {synthsCount} synthetic order books created.");
 
             return result.OrderByDescending(x => x.PnL).ToList();
         }
@@ -242,7 +241,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                 if (!newBids.Any() && !newAsks.Any())
                     continue;
 
-                var newOrderBook = new OrderBook(orderBook.Exchange, orderBook.AssetPair, newBids, newAsks, orderBook.Timestamp);
+                var newOrderBook = new OrderBook(orderBook.Source, orderBook.AssetPair, newBids, newAsks, orderBook.Timestamp);
                 result.Add(newOrderBook);
             }
 

@@ -7,7 +7,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 {
     public class SynthOrderBook
     {
-        public string Exchange => string.Join(" - ", OriginalOrderBooks.Select(x => x.Exchange));
+        public string Source => string.Join(" - ", OriginalOrderBooks.Select(x => x.Source));
 
         public AssetPair AssetPair { get; }
 

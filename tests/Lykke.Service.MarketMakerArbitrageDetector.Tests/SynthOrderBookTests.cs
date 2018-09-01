@@ -26,10 +26,10 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
         [Fact]
         public void FromOrderBook_0_Test()
         {
-            const string exchange = "FakeExchange";
+            const string source = "FakeExchange";
             var timestamp = DateTime.UtcNow;
 
-            var btcEurOrderBook = new OrderBook(exchange, _btceur,
+            var btcEurOrderBook = new OrderBook(source, _btceur,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(8825, 9), new LimitOrder(8823, 5)
@@ -41,7 +41,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 timestamp);
 
             var synthOrderBook = SynthOrderBook.FromOrderBook(btcEurOrderBook, _btceur);
-            Assert.Equal(exchange, synthOrderBook.Exchange);
+            Assert.Equal(source, synthOrderBook.Source);
             Assert.Equal(_btceur, synthOrderBook.AssetPair);
             Assert.Equal("BTCEUR", synthOrderBook.ConversionPath);
             Assert.Equal(2, synthOrderBook.Bids.Count());
@@ -61,11 +61,11 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
         [Fact]
         public void FromOrderBook_1_Test()
         {
-            const string exchange = "FakeExchange";
+            const string source = "FakeExchange";
             var timestamp = DateTime.UtcNow;
             var inverted = _btcusd.Invert();
 
-            var btcUsdOrderBook = new OrderBook(exchange, _btcusd,
+            var btcUsdOrderBook = new OrderBook(source, _btcusd,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(1/8825m, 9), new LimitOrder(1/8823m, 5)
@@ -77,7 +77,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 timestamp);
 
             var synthOrderBook = SynthOrderBook.FromOrderBook(btcUsdOrderBook, inverted);
-            Assert.Equal(exchange, synthOrderBook.Exchange);
+            Assert.Equal(source, synthOrderBook.Source);
             Assert.Equal(inverted, synthOrderBook.AssetPair);
             Assert.Equal("BTCUSD", synthOrderBook.ConversionPath);
             Assert.Equal(3, synthOrderBook.Bids.Count());
@@ -98,11 +98,11 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
         [Fact]
         public void From2OrderBooks_0_0_Test()
         {
-            const string exchange = "FakeExchange";
+            const string source = "FakeExchange";
             var timestamp1 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp2 = DateTime.UtcNow;
 
-            var btcEurOrderBook = new OrderBook(exchange, _btceur,
+            var btcEurOrderBook = new OrderBook(source, _btceur,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(8825, 9),
@@ -116,7 +116,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 },
                 timestamp1);
 
-            var eurUsdOrderBook = new OrderBook(exchange, _eurusd,
+            var eurUsdOrderBook = new OrderBook(source, _eurusd,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(1.11m, 9),
@@ -131,7 +131,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 timestamp2);
 
             var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurUsdOrderBook, _btcusd);
-            Assert.Equal("FakeExchange - FakeExchange", synthOrderBook.Exchange);
+            Assert.Equal("FakeExchange - FakeExchange", synthOrderBook.Source);
             Assert.Equal(_btcusd, synthOrderBook.AssetPair);
             Assert.Equal("BTCEUR & EURUSD", synthOrderBook.ConversionPath);
             Assert.Equal(2, synthOrderBook.Bids.Count());
@@ -146,11 +146,11 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
         [Fact]
         public void From2OrderBooks_0_1_Test()
         {
-            const string exchange = "FakeExchange";
+            const string source = "FakeExchange";
             var timestamp1 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp2 = DateTime.UtcNow;
 
-            var btcEurOrderBook = new OrderBook(exchange, _btceur,
+            var btcEurOrderBook = new OrderBook(source, _btceur,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(8825, 9),
@@ -164,7 +164,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 },
                 timestamp1);
 
-            var eurUsdOrderBook = new OrderBook(exchange, _usdeur,
+            var eurUsdOrderBook = new OrderBook(source, _usdeur,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(1/1.11m, 9),
@@ -179,7 +179,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 timestamp2);
 
             var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurUsdOrderBook, _btcusd);
-            Assert.Equal("FakeExchange - FakeExchange", synthOrderBook.Exchange);
+            Assert.Equal("FakeExchange - FakeExchange", synthOrderBook.Source);
             Assert.Equal(_btcusd, synthOrderBook.AssetPair);
             Assert.Equal("BTCEUR & USDEUR", synthOrderBook.ConversionPath);
             Assert.Equal(3, synthOrderBook.Bids.Count());
@@ -196,11 +196,11 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
         [Fact]
         public void From2OrderBooks_1_0_Test()
         {
-            const string exchange = "FakeExchange";
+            const string source = "FakeExchange";
             var timestamp1 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp2 = DateTime.UtcNow;
 
-            var btcEurOrderBook = new OrderBook(exchange, _eurbtc,
+            var btcEurOrderBook = new OrderBook(source, _eurbtc,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(1/8825m, 9),
@@ -214,7 +214,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 },
                 timestamp1);
 
-            var eurUsdOrderBook = new OrderBook(exchange, _eurusd,
+            var eurUsdOrderBook = new OrderBook(source, _eurusd,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(1.11m, 9),
@@ -229,7 +229,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 timestamp2);
 
             var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurUsdOrderBook, _btcusd);
-            Assert.Equal("FakeExchange - FakeExchange", synthOrderBook.Exchange);
+            Assert.Equal("FakeExchange - FakeExchange", synthOrderBook.Source);
             Assert.Equal(_btcusd, synthOrderBook.AssetPair);
             Assert.Equal("EURBTC & EURUSD", synthOrderBook.ConversionPath);
             Assert.Equal(2, synthOrderBook.Bids.Count());
@@ -245,11 +245,11 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
         [Fact]
         public void From2OrderBooks_1_1_Test()
         {
-            const string exchange = "FakeExchange";
+            const string source = "FakeExchange";
             var timestamp1 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp2 = DateTime.UtcNow;
 
-            var btcEurOrderBook = new OrderBook(exchange, _eurbtc,
+            var btcEurOrderBook = new OrderBook(source, _eurbtc,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(1/8825m, 9),
@@ -263,7 +263,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 },
                 timestamp1);
 
-            var eurUsdOrderBook = new OrderBook(exchange, _usdeur,
+            var eurUsdOrderBook = new OrderBook(source, _usdeur,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(1/1.11m, 9),
@@ -278,7 +278,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 timestamp2);
 
             var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurUsdOrderBook, _btcusd);
-            Assert.Equal("FakeExchange - FakeExchange", synthOrderBook.Exchange);
+            Assert.Equal("FakeExchange - FakeExchange", synthOrderBook.Source);
             Assert.Equal(_btcusd, synthOrderBook.AssetPair);
             Assert.Equal("EURBTC & USDEUR", synthOrderBook.ConversionPath);
             Assert.Equal(3, synthOrderBook.Bids.Count());
@@ -296,14 +296,14 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
         [Fact]
         public void From3OrderBooks_0_0_0_Test()
         {
-            const string exchange1 = "TEST1";
-            const string exchange2 = "TEST2";
-            const string exchange3 = "TEST3";
+            const string source1 = "TEST1";
+            const string source2 = "TEST2";
+            const string source3 = "TEST3";
             var timestamp1 = DateTime.UtcNow.AddSeconds(-2);
             var timestamp2 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp3 = DateTime.UtcNow;
 
-            var btcEurOrderBook = new OrderBook(exchange1, _btceur,
+            var btcEurOrderBook = new OrderBook(source1, _btceur,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(7310m, 9), new LimitOrder(7300m, 5)
@@ -314,7 +314,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 },
                 timestamp1);
 
-            var eurJpyOrderBook = new OrderBook(exchange2, _eurjpy,
+            var eurJpyOrderBook = new OrderBook(source2, _eurjpy,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(131m, 9), new LimitOrder(130m, 5)
@@ -325,7 +325,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 },
                 timestamp2);
 
-            var jpyUsdOrderBook = new OrderBook(exchange3, _jpyusd,
+            var jpyUsdOrderBook = new OrderBook(source3, _jpyusd,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(0.009132m, 9), new LimitOrder(0.009131m, 5)
@@ -337,7 +337,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 timestamp3);
 
             var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, _btcusd);
-            Assert.Equal("TEST1 - TEST2 - TEST3", synthOrderBook.Exchange);
+            Assert.Equal("TEST1 - TEST2 - TEST3", synthOrderBook.Source);
             Assert.Equal(_btcusd, synthOrderBook.AssetPair);
             Assert.Equal("BTCEUR & EURJPY & JPYUSD", synthOrderBook.ConversionPath);
             Assert.Equal(2, synthOrderBook.Bids.Count());
@@ -353,14 +353,14 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
         [Fact]
         public void From3OrderBooks_0_0_1_Test()
         {
-            const string exchange1 = "TEST1";
-            const string exchange2 = "TEST2";
-            const string exchange3 = "TEST3";
+            const string source1 = "TEST1";
+            const string source2 = "TEST2";
+            const string source3 = "TEST3";
             var timestamp1 = DateTime.UtcNow.AddSeconds(-2);
             var timestamp2 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp3 = DateTime.UtcNow;
 
-            var btcEurOrderBook = new OrderBook(exchange1, _btceur,
+            var btcEurOrderBook = new OrderBook(source1, _btceur,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(7310m, 9), new LimitOrder(7300m, 5)
@@ -371,7 +371,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 },
                 timestamp1);
 
-            var eurJpyOrderBook = new OrderBook(exchange2, _eurjpy,
+            var eurJpyOrderBook = new OrderBook(source2, _eurjpy,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(131m, 9), new LimitOrder(130m, 5)
@@ -382,7 +382,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 },
                 timestamp2);
 
-            var jpyUsdOrderBook = new OrderBook(exchange3, _usdjpy,
+            var jpyUsdOrderBook = new OrderBook(source3, _usdjpy,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(1/0.009132m, 9), new LimitOrder(1/0.009131m, 5)
@@ -394,7 +394,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 timestamp3);
 
             var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, _btcusd);
-            Assert.Equal("TEST1 - TEST2 - TEST3", synthOrderBook.Exchange);
+            Assert.Equal("TEST1 - TEST2 - TEST3", synthOrderBook.Source);
             Assert.Equal(_btcusd, synthOrderBook.AssetPair);
             Assert.Equal("BTCEUR & EURJPY & USDJPY", synthOrderBook.ConversionPath);
             Assert.Equal(4, synthOrderBook.Bids.Count());
@@ -410,14 +410,14 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
         [Fact]
         public void From3OrderBooks_0_1_0_Test()
         {
-            const string exchange1 = "TEST1";
-            const string exchange2 = "TEST2";
-            const string exchange3 = "TEST3";
+            const string source1 = "TEST1";
+            const string source2 = "TEST2";
+            const string source3 = "TEST3";
             var timestamp1 = DateTime.UtcNow.AddSeconds(-2);
             var timestamp2 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp3 = DateTime.UtcNow;
 
-            var btcEurOrderBook = new OrderBook(exchange1, _btceur,
+            var btcEurOrderBook = new OrderBook(source1, _btceur,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(7310m, 9), new LimitOrder(7300m, 5)
@@ -428,7 +428,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 },
                 timestamp1);
 
-            var eurJpyOrderBook = new OrderBook(exchange2, _eurjpy,
+            var eurJpyOrderBook = new OrderBook(source2, _eurjpy,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(131m, 9), new LimitOrder(130m, 5)
@@ -439,7 +439,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 },
                 timestamp2);
 
-            var jpyUsdOrderBook = new OrderBook(exchange3, _jpyusd,
+            var jpyUsdOrderBook = new OrderBook(source3, _jpyusd,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(0.009132m, 9), new LimitOrder(0.009131m, 5)
@@ -451,7 +451,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 timestamp3);
 
             var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, _btcusd);
-            Assert.Equal("TEST1 - TEST2 - TEST3", synthOrderBook.Exchange);
+            Assert.Equal("TEST1 - TEST2 - TEST3", synthOrderBook.Source);
             Assert.Equal(_btcusd, synthOrderBook.AssetPair);
             Assert.Equal("BTCEUR & EURJPY & JPYUSD", synthOrderBook.ConversionPath);
             Assert.Equal(2, synthOrderBook.Bids.Count());
@@ -467,14 +467,14 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
         [Fact]
         public void From3OrderBooks_1_0_0_Test()
         {
-            const string exchange1 = "TEST1";
-            const string exchange2 = "TEST2";
-            const string exchange3 = "TEST3";
+            const string source1 = "TEST1";
+            const string source2 = "TEST2";
+            const string source3 = "TEST3";
             var timestamp1 = DateTime.UtcNow.AddSeconds(-2);
             var timestamp2 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp3 = DateTime.UtcNow;
 
-            var btcEurOrderBook = new OrderBook(exchange1, _eurbtc,
+            var btcEurOrderBook = new OrderBook(source1, _eurbtc,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(1/7310m, 9), new LimitOrder(1/7300m, 5)
@@ -485,7 +485,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 },
                 timestamp1);
 
-            var eurJpyOrderBook = new OrderBook(exchange2, _eurjpy,
+            var eurJpyOrderBook = new OrderBook(source2, _eurjpy,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(131m, 9), new LimitOrder(130m, 5)
@@ -496,7 +496,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 },
                 timestamp2);
 
-            var jpyUsdOrderBook = new OrderBook(exchange3, _jpyusd,
+            var jpyUsdOrderBook = new OrderBook(source3, _jpyusd,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(0.009132m, 9), new LimitOrder(0.009131m, 5)
@@ -508,7 +508,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 timestamp3);
 
             var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, _btcusd);
-            Assert.Equal("TEST1 - TEST2 - TEST3", synthOrderBook.Exchange);
+            Assert.Equal("TEST1 - TEST2 - TEST3", synthOrderBook.Source);
             Assert.Equal(_btcusd, synthOrderBook.AssetPair);
             Assert.Equal("EURBTC & EURJPY & JPYUSD", synthOrderBook.ConversionPath);
             Assert.Equal(2, synthOrderBook.Bids.Count());
@@ -524,14 +524,14 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
         [Fact]
         public void From3OrderBooks_0_1_1_Test()
         {
-            const string exchange1 = "TEST1";
-            const string exchange2 = "TEST2";
-            const string exchange3 = "TEST3";
+            const string source1 = "TEST1";
+            const string source2 = "TEST2";
+            const string source3 = "TEST3";
             var timestamp1 = DateTime.UtcNow.AddSeconds(-2);
             var timestamp2 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp3 = DateTime.UtcNow;
 
-            var btcEurOrderBook = new OrderBook(exchange1, _btceur,
+            var btcEurOrderBook = new OrderBook(source1, _btceur,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(7310m, 9), new LimitOrder(7300m, 5)
@@ -542,7 +542,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 },
                 timestamp1);
 
-            var jpyEurOrderBook = new OrderBook(exchange2, _jpyeur,
+            var jpyEurOrderBook = new OrderBook(source2, _jpyeur,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(1/132m, 11), new LimitOrder(1/133m, 7), new LimitOrder(1/134m, 3)
@@ -553,7 +553,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 },
                 timestamp2);
 
-            var jpyUsdOrderBook = new OrderBook(exchange3, _usdjpy,
+            var jpyUsdOrderBook = new OrderBook(source3, _usdjpy,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(1/0.009132m, 9), new LimitOrder(1/0.009131m, 5)
@@ -565,7 +565,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 timestamp3);
 
             var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, jpyEurOrderBook, jpyUsdOrderBook, _btcusd);
-            Assert.Equal("TEST1 - TEST2 - TEST3", synthOrderBook.Exchange);
+            Assert.Equal("TEST1 - TEST2 - TEST3", synthOrderBook.Source);
             Assert.Equal(_btcusd, synthOrderBook.AssetPair);
             Assert.Equal("BTCEUR & JPYEUR & USDJPY", synthOrderBook.ConversionPath);
             Assert.Equal(2, synthOrderBook.Bids.Count());
@@ -581,14 +581,14 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
         [Fact]
         public void From3OrderBooks_1_0_1_Test()
         {
-            const string exchange1 = "TEST1";
-            const string exchange2 = "TEST2";
-            const string exchange3 = "TEST3";
+            const string source1 = "TEST1";
+            const string source2 = "TEST2";
+            const string source3 = "TEST3";
             var timestamp1 = DateTime.UtcNow.AddSeconds(-2);
             var timestamp2 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp3 = DateTime.UtcNow;
 
-            var btcEurOrderBook = new OrderBook(exchange1, _eurbtc,
+            var btcEurOrderBook = new OrderBook(source1, _eurbtc,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(1/7310m, 9), new LimitOrder(1/7300m, 5)
@@ -599,7 +599,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 },
                 timestamp1);
 
-            var eurJpyOrderBook = new OrderBook(exchange2, _eurjpy,
+            var eurJpyOrderBook = new OrderBook(source2, _eurjpy,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(131m, 9), new LimitOrder(130m, 5)
@@ -610,7 +610,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 },
                 timestamp2);
             
-            var jpyUsdOrderBook = new OrderBook(exchange3, _usdjpy,
+            var jpyUsdOrderBook = new OrderBook(source3, _usdjpy,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(1/0.009132m, 9), new LimitOrder(1/0.009131m, 5)
@@ -622,7 +622,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 timestamp3);
 
             var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, _btcusd);
-            Assert.Equal("TEST1 - TEST2 - TEST3", synthOrderBook.Exchange);
+            Assert.Equal("TEST1 - TEST2 - TEST3", synthOrderBook.Source);
             Assert.Equal(_btcusd, synthOrderBook.AssetPair);
             Assert.Equal("EURBTC & EURJPY & USDJPY", synthOrderBook.ConversionPath);
             Assert.Equal(6, synthOrderBook.Bids.Count());
@@ -638,14 +638,14 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
         [Fact]
         public void From3OrderBooks_1_1_0_Test()
         {
-            const string exchange1 = "TEST1";
-            const string exchange2 = "TEST2";
-            const string exchange3 = "TEST3";
+            const string source1 = "TEST1";
+            const string source2 = "TEST2";
+            const string source3 = "TEST3";
             var timestamp1 = DateTime.UtcNow.AddSeconds(-2);
             var timestamp2 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp3 = DateTime.UtcNow;
 
-            var btcEurOrderBook = new OrderBook(exchange1, _eurbtc,
+            var btcEurOrderBook = new OrderBook(source1, _eurbtc,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(1/7310m, 9), new LimitOrder(1/7300m, 5)
@@ -656,7 +656,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 },
                 timestamp1);
 
-            var eurJpyOrderBook = new OrderBook(exchange2, _jpyeur,
+            var eurJpyOrderBook = new OrderBook(source2, _jpyeur,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(1/131m, 9), new LimitOrder(1/130m, 5)
@@ -667,7 +667,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 },
                 timestamp2);
 
-            var jpyUsdOrderBook = new OrderBook(exchange3, _jpyusd,
+            var jpyUsdOrderBook = new OrderBook(source3, _jpyusd,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(0.009132m, 9), new LimitOrder(0.009131m, 5)
@@ -679,7 +679,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 timestamp3);
 
             var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, _btcusd);
-            Assert.Equal("TEST1 - TEST2 - TEST3", synthOrderBook.Exchange);
+            Assert.Equal("TEST1 - TEST2 - TEST3", synthOrderBook.Source);
             Assert.Equal(_btcusd, synthOrderBook.AssetPair);
             Assert.Equal("EURBTC & JPYEUR & JPYUSD", synthOrderBook.ConversionPath);
             Assert.Equal(4, synthOrderBook.Bids.Count());
@@ -695,14 +695,14 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
         [Fact]
         public void From3OrderBooks_1_1_1_Test()
         {
-            const string exchange1 = "TEST1";
-            const string exchange2 = "TEST2";
-            const string exchange3 = "TEST3";
+            const string source1 = "TEST1";
+            const string source2 = "TEST2";
+            const string source3 = "TEST3";
             var timestamp1 = DateTime.UtcNow.AddSeconds(-2);
             var timestamp2 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp3 = DateTime.UtcNow;
 
-            var btcEurOrderBook = new OrderBook(exchange1, _eurbtc,
+            var btcEurOrderBook = new OrderBook(source1, _eurbtc,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(1/7310m, 9), new LimitOrder(1/7300m, 5)
@@ -713,7 +713,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 },
                 timestamp1);
 
-            var eurJpyOrderBook = new OrderBook(exchange2, _jpyeur,
+            var eurJpyOrderBook = new OrderBook(source2, _jpyeur,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(1/131m, 9), new LimitOrder(1/130m, 5)
@@ -724,7 +724,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 },
                 timestamp2);
 
-            var jpyUsdOrderBook = new OrderBook(exchange3, _usdjpy,
+            var jpyUsdOrderBook = new OrderBook(source3, _usdjpy,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(1/0.009132m, 9), new LimitOrder(1/0.009131m, 5)
@@ -736,7 +736,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 timestamp3);
 
             var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, _btcusd);
-            Assert.Equal("TEST1 - TEST2 - TEST3", synthOrderBook.Exchange);
+            Assert.Equal("TEST1 - TEST2 - TEST3", synthOrderBook.Source);
             Assert.Equal(_btcusd, synthOrderBook.AssetPair);
             Assert.Equal("EURBTC & JPYEUR & USDJPY", synthOrderBook.ConversionPath);
             Assert.Equal(3, synthOrderBook.Bids.Count());

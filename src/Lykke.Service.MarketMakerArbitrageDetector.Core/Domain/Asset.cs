@@ -34,7 +34,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
                 return false;
 
             if (!(obj is Asset other))
-                throw new InvalidCastException(nameof(obj));
+                throw new InvalidCastException($"Object {obj} can't be casted to type Asset.");
 
             return Equals(other);
         }

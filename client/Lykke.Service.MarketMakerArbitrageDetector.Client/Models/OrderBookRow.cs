@@ -5,7 +5,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Client.Models
 {
     public class OrderBookRow
     {
-        public string Exchange { get; set; }
+        public string Source { get; set; }
 
         public AssetPair AssetPair { get; set; }
 
@@ -27,7 +27,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Client.Models
 
         public override string ToString()
         {
-            return $"{Exchange} - {AssetPair}";
+            return $"{Source} - {AssetPair}";
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Common.Log;
@@ -60,7 +61,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                 return _lykkeOrderBooks.Values.Select(x =>
                     new OrderBookRow
                     (
-                        x.Exchange,
+                        x.Source,
                         x.AssetPair,
                         GetMarketMakers(x).Values,
                         x.BestBid?.Price,
@@ -103,7 +104,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                     var newBids = orderBook.Bids ?? dirtyOrderBook.Bids;
                     var newAsks = orderBook.Asks ?? dirtyOrderBook.Asks;
 
-                    var newOrderBook = new OrderBook(orderBook.Exchange, orderBook.AssetPair, newBids, newAsks, orderBook.Timestamp);
+                    var newOrderBook = new OrderBook(orderBook.Source, orderBook.AssetPair, newBids, newAsks, orderBook.Timestamp);
                     _dirtyLykkeOrderBooks[orderBook.AssetPair.Id] = newOrderBook;
                 }
 
@@ -127,8 +128,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
 
         private decimal? ConvertToUsd(string sourceAssetId)
         {
-            if (string.IsNullOrWhiteSpace(sourceAssetId))
-                throw new ArgumentException(nameof(sourceAssetId));
+            Debug.Assert(!string.IsNullOrWhiteSpace(sourceAssetId));
 
             var usd = _assets.Values.Single(x => x.Id == "USD");
             var asset = _assets.Values.Single(x => x.Id == sourceAssetId);
@@ -263,7 +263,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                     var newBids = dirtyOrderBook.Bids ?? orderBook.Bids;
                     var newAsks = dirtyOrderBook.Asks ?? orderBook.Asks;
 
-                    var newOrderBook = new OrderBook(orderBook.Exchange, orderBook.AssetPair, newBids, newAsks, orderBook.Timestamp);
+                    var newOrderBook = new OrderBook(orderBook.Source, orderBook.AssetPair, newBids, newAsks, orderBook.Timestamp);
                     _dirtyLykkeOrderBooks[orderBook.AssetPair.Id] = newOrderBook;
                 }
 
@@ -289,7 +289,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                 if (isValid)
                 {
                     _lykkeOrderBooks[dirtyOrderBook.AssetPair.Id] =
-                        new OrderBook(dirtyOrderBook.Exchange, dirtyOrderBook.AssetPair, dirtyOrderBook.Bids, dirtyOrderBook.Asks, dirtyOrderBook.Timestamp);
+                        new OrderBook(dirtyOrderBook.Source, dirtyOrderBook.AssetPair, dirtyOrderBook.Bids, dirtyOrderBook.Asks, dirtyOrderBook.Timestamp);
                 }
             }
         }

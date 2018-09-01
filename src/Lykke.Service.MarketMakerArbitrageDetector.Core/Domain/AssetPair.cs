@@ -64,23 +64,17 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 
         public bool ContainsAsset(string assetId)
         {
+            Debug.Assert(!string.IsNullOrWhiteSpace(assetId));
             Debug.Assert(IsValid());
-
-            if (string.IsNullOrWhiteSpace(assetId))
-                throw new ArgumentException(nameof(assetId));
 
             return Base.Id == assetId || Quote.Id == assetId;
         }
 
         public bool ContainsAssets(string oneId, string anotherId)
         {
+            Debug.Assert(!string.IsNullOrWhiteSpace(oneId));
+            Debug.Assert(!string.IsNullOrWhiteSpace(anotherId));
             Debug.Assert(IsValid());
-
-            if (string.IsNullOrWhiteSpace(oneId))
-                throw new ArgumentException(nameof(oneId));
-
-            if (string.IsNullOrWhiteSpace(anotherId))
-                throw new ArgumentException(nameof(anotherId));
 
             return ContainsAsset(oneId) && ContainsAsset(anotherId);
         }
@@ -112,7 +106,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
                 return false;
 
             if (!(obj is AssetPair other))
-                throw new InvalidCastException(nameof(obj));
+                throw new InvalidCastException($"Object {obj} can't be casted to type AssetPair.");
 
             return Equals(other);
         }

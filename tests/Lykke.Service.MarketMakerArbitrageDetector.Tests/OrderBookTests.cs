@@ -13,10 +13,10 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
         [Fact]
         public void SetAssetPairTest()
         {
-            const string exchangeName = "FakeExchange";
+            const string source = "FakeExchange";
             var timestamp = DateTime.UtcNow;
 
-            var orderBook = new OrderBook(exchangeName, new AssetPair("BTCUSD"), 
+            var orderBook = new OrderBook(source, new AssetPair("BTCUSD"), 
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(8825, 9), new LimitOrder(8823, 5)
@@ -38,11 +38,11 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
         [Fact]
         public void InvertTest()
         {
-            const string exchangeName = "FakeExchange";
+            const string source = "FakeExchange";
             const string invertedPair = "USDBTC";
             var timestamp = DateTime.UtcNow;
 
-            var orderBook = new OrderBook(exchangeName, _btcusd,
+            var orderBook = new OrderBook(source, _btcusd,
                 new List<LimitOrder> // bids
                 {
                     new LimitOrder(8825, 9), new LimitOrder(8823, 5)
@@ -55,7 +55,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
 
             var inverted = orderBook.Invert();
             Assert.NotNull(inverted);
-            Assert.Equal(exchangeName, inverted.Exchange);
+            Assert.Equal(source, inverted.Source);
             Assert.Equal(invertedPair, inverted.AssetPair.Name);
             Assert.Equal(orderBook.Bids.Count(), inverted.Asks.Count());
             Assert.Equal(orderBook.Asks.Count(), inverted.Bids.Count());

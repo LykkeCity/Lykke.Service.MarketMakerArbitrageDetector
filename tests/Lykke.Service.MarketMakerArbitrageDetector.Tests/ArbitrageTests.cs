@@ -16,11 +16,11 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
         [Fact]
         public void ArbitrageVolume_NoArbitrage_EmptyOrderBooks_Test()
         {
-            const string exchangeName = "FE";
+            const string source = "FE";
             var timestamp = DateTime.UtcNow;
 
-            var orderBook1 = new OrderBook(exchangeName, _btcusd, new List<LimitOrder>(), new List<LimitOrder>(), timestamp);
-            var orderBook2 = new OrderBook(exchangeName, _btcusd, new List<LimitOrder>(), new List<LimitOrder>(), timestamp);
+            var orderBook1 = new OrderBook(source, _btcusd, new List<LimitOrder>(), new List<LimitOrder>(), timestamp);
+            var orderBook2 = new OrderBook(source, _btcusd, new List<LimitOrder>(), new List<LimitOrder>(), timestamp);
 
             var volume = Arbitrage.GetArbitrageVolumeAndPnL(orderBook1.Bids, orderBook2.Asks);
             Assert.Null(volume);
@@ -29,7 +29,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
         [Fact]
         public void ArbitrageVolume_NoArbitrage_TheSameOrderBook_Test()
         {
-            const string exchangeName = "FE";
+            const string source = "FE";
             var timestamp = DateTime.UtcNow;
 
             var bids = new List<LimitOrder>
@@ -44,8 +44,8 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 new LimitOrder("", "", 8900.12345677m, 3)
             };
 
-            var orderBook1 = new OrderBook(exchangeName, _btcusd, bids, asks, timestamp);
-            var orderBook2 = new OrderBook(exchangeName, _btcusd, bids, asks, timestamp);
+            var orderBook1 = new OrderBook(source, _btcusd, bids, asks, timestamp);
+            var orderBook2 = new OrderBook(source, _btcusd, bids, asks, timestamp);
 
             var volume = Arbitrage.GetArbitrageVolumeAndPnL(orderBook1.Bids, orderBook2.Asks);
             Assert.Null(volume);
@@ -54,7 +54,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
         [Fact]
         public void ArbitrageVolumePnL_Simple1_Test()
         {
-            const string exchangeName = "FE";
+            const string source = "FE";
             var timestamp = DateTime.UtcNow;
 
             var bids = new List<LimitOrder>
@@ -69,8 +69,8 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 new LimitOrder("", "", 8900.12345677m, 3) // <-
             };
 
-            var bidsOrderBook = new OrderBook(exchangeName, _btcusd, bids, new List<LimitOrder>(), timestamp);
-            var asksOrderBook = new OrderBook(exchangeName, _btcusd, new List<LimitOrder>(), asks, timestamp);
+            var bidsOrderBook = new OrderBook(source, _btcusd, bids, new List<LimitOrder>(), timestamp);
+            var asksOrderBook = new OrderBook(source, _btcusd, new List<LimitOrder>(), asks, timestamp);
 
             var volumePnL = Arbitrage.GetArbitrageVolumeAndPnL(bidsOrderBook.Bids, asksOrderBook.Asks);
             Assert.Equal(9, volumePnL?.Volume);
@@ -118,7 +118,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
         {
             // https://docs.google.com/spreadsheets/d/1plnbQSS-WP6ykTv8wIi_hbAhk_aSz_tllXFIE3jhFpU/edit#gid=0
 
-            const string exchangeName = "FE";
+            const string source = "FE";
             var timestamp = DateTime.UtcNow;
 
             var bids = new List<LimitOrder>
@@ -140,8 +140,8 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 new LimitOrder("", "", 500, 10)  // <-
             };
 
-            var bidsOrderBook = new OrderBook(exchangeName, _btcusd, bids, new List<LimitOrder>(), timestamp);
-            var asksOrderBook = new OrderBook(exchangeName, _btcusd, new List<LimitOrder>(), asks, timestamp);
+            var bidsOrderBook = new OrderBook(source, _btcusd, bids, new List<LimitOrder>(), timestamp);
+            var asksOrderBook = new OrderBook(source, _btcusd, new List<LimitOrder>(), asks, timestamp);
 
             var volumePnL = Arbitrage.GetArbitrageVolumeAndPnL(bidsOrderBook.Bids, asksOrderBook.Asks);
             Assert.Equal(41, volumePnL?.Volume);
@@ -152,7 +152,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
         public void ArbitrageVolumePnL_Complex2_Test()
         {
             // https://docs.google.com/spreadsheets/d/1plnbQSS-WP6ykTv8wIi_hbAhk_aSz_tllXFIE3jhFpU/edit#gid=2011486790
-            const string exchangeName = "FE";
+            const string source = "FE";
             var timestamp = DateTime.UtcNow;
 
             var bids = new List<LimitOrder>
@@ -184,8 +184,8 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Tests
                 new LimitOrder("", "", 1.1m, 10),
             };
 
-            var bidsOrderBook = new OrderBook(exchangeName, _btcusd, bids, new List<LimitOrder>(), timestamp);
-            var asksOrderBook = new OrderBook(exchangeName, _btcusd, new List<LimitOrder>(), asks, timestamp);
+            var bidsOrderBook = new OrderBook(source, _btcusd, bids, new List<LimitOrder>(), timestamp);
+            var asksOrderBook = new OrderBook(source, _btcusd, new List<LimitOrder>(), asks, timestamp);
 
             var volumePnL = Arbitrage.GetArbitrageVolumeAndPnL(bidsOrderBook.Bids, asksOrderBook.Asks);
             Assert.Equal(70, volumePnL?.Volume);
