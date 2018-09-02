@@ -5,9 +5,11 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Services
 {
     public interface IOrderBooksService
     {
-        IReadOnlyCollection<OrderBook> GetAll();
+        IReadOnlyList<OrderBook> GetAll();
 
-        IReadOnlyCollection<OrderBookRow> GetAllRows();
+        IReadOnlyList<OrderBookRow> GetAllRows(bool wantedOnly = true);
+
+        IReadOnlyList<OrderBook> GetFilteredByWallets();
 
         OrderBook Get(string assetPairId);
 

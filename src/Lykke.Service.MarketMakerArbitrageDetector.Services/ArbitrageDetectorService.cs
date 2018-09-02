@@ -119,7 +119,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
 
         private void Execute()
         {
-            var orderBooks = GetOrderBooksFilteredByWallets();
+            var orderBooks = _orderBooksService.GetFilteredByWallets();
             var lykkeArbitrages = GetArbitrages(orderBooks);
             RefreshArbitrages(lykkeArbitrages);
         }
@@ -245,31 +245,6 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                 _arbitrages.Clear();
                 _arbitrages.AddRange(lykkeArbitrages);
             }
-        }
-
-        private IReadOnlyCollection<OrderBook> GetOrderBooksFilteredByWallets()
-        {
-            var allOrderBooks = _orderBooksService.GetAll();
-
-            var wallets = GetSettings().Wallets;
-            if (!wallets.Any())
-                return allOrderBooks;
-
-            var result = new List<OrderBook>();
-            
-            foreach (var orderBook in allOrderBooks)
-            {
-                var newBids = orderBook.Bids.Where(x => wallets.Keys.Contains(x.WalletId)).ToList();
-                var newAsks = orderBook.Asks.Where(x => wallets.Keys.Contains(x.WalletId)).ToList();
-
-                if (!newBids.Any() && !newAsks.Any())
-                    continue;
-
-                var newOrderBook = new OrderBook(orderBook.Source, orderBook.AssetPair, newBids, newAsks, orderBook.Timestamp);
-                result.Add(newOrderBook);
-            }
-
-            return result;
         }
 
         private Settings GetSettings()
