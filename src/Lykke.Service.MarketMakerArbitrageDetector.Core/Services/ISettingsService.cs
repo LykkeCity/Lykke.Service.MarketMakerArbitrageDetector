@@ -1,11 +1,12 @@
-﻿using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain;
+﻿using System.Threading.Tasks;
+using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Services
 {
     public interface ISettingsService
     {
-        Settings Get();
+        Task<Settings> GetAsync();
 
-        void Set(Settings settings);
+        Task SetAsync(Settings settings);
     }
 }

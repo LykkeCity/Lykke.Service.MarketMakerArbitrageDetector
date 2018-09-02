@@ -26,8 +26,9 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
         public DateTime Timestamp { get; }
 
 
-        public OrderBookRow(string source, AssetPair assetPair, IReadOnlyCollection<string> marketMakers, decimal? bestBid, decimal? bestAsk,
-            decimal bidsVolume, decimal? bidsVolumeInUsd, decimal asksVolume, decimal? asksVolumeInUsd, DateTime timestamp)
+        public OrderBookRow(string source, AssetPair assetPair, decimal? bestBid, decimal? bestAsk,
+            decimal bidsVolume, decimal? bidsVolumeInUsd, decimal asksVolume, decimal? asksVolumeInUsd, DateTime timestamp,
+            IReadOnlyCollection<string> marketMakers)
         {
             Source = source;
             AssetPair = assetPair;

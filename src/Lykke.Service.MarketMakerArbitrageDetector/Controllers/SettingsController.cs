@@ -23,23 +23,21 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Controllers
         [HttpGet]
         [SwaggerOperation("SettingsGet")]
         [ProducesResponseType(typeof(ClientSettings), (int)HttpStatusCode.OK)]
-        public Task<ClientSettings> GetAsync()
+        public async Task<ClientSettings> GetAsync()
         {
-            var domain = _settingsService.Get();
+            var domain = await _settingsService.GetAsync();
             var model = Mapper.Map<ClientSettings>(domain);
 
-            return Task.FromResult(model);
+            return model;
         }
 
         [HttpPost]
         [SwaggerOperation("SettingsSet")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
-        public Task SetAsync([FromBody]ClientSettings settings)
+        public async Task SetAsync([FromBody]ClientSettings settings)
         {
             var domain = Mapper.Map<DomainSettings>(settings);
-            _settingsService.Set(domain);
-
-            return Task.CompletedTask;
+            await _settingsService.SetAsync(domain);
         }
     }
 }

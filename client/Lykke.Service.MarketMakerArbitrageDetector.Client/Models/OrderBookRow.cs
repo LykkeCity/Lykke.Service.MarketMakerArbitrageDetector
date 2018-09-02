@@ -9,8 +9,6 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Client.Models
 
         public AssetPair AssetPair { get; set; }
 
-        public IReadOnlyCollection<string> MarketMakers { get; set; } = new List<string>();
-
         public decimal? BestBid { get; set; }
 
         public decimal? BestAsk { get; set; }
@@ -24,6 +22,8 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Client.Models
         public decimal? AsksVolumeInUsd { get; set; }
 
         public DateTime Timestamp { get; set; }
+
+        public IReadOnlyList<string> MarketMakers { get; set; } = new List<string>();
 
         public override string ToString()
         {

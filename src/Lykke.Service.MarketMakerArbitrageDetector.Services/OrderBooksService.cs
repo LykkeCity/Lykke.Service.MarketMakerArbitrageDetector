@@ -63,14 +63,14 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                     (
                         x.Source,
                         x.AssetPair,
-                        GetMarketMakers(x).Values,
                         x.BestBid?.Price,
                         x.BestAsk?.Price,
                         x.BidsVolume,
                         ConvertToUsd(x.AssetPair.Base.Id, x.BidsVolume),
                         x.AsksVolume,
                         ConvertToUsd(x.AssetPair.Base.Id, x.AsksVolume),
-                        x.Timestamp
+                        x.Timestamp,
+                        GetMarketMakers(x).Values
                     )).OrderBy(x => x.AssetPair.Name).ToList();
             }
         }
@@ -298,7 +298,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
         {
             var result = new Dictionary<string, string>();
 
-            var wallets = _settingsService.Get().Wallets;
+            var wallets = _settingsService.GetAsync().GetAwaiter().GetResult().Wallets;
             var walletIds = wallets.Keys;
 
             if (!wallets.Any())

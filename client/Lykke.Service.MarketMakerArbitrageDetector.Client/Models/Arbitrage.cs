@@ -1,4 +1,6 @@
-﻿namespace Lykke.Service.MarketMakerArbitrageDetector.Client.Models
+﻿using System.Collections.Generic;
+
+namespace Lykke.Service.MarketMakerArbitrageDetector.Client.Models
 {
     public class Arbitrage
     {
@@ -31,6 +33,8 @@
         public decimal? SynthAsk { get; set; }
 
         public decimal? SynthBid { get; set; }
+
+        public IReadOnlyList<string> MarketMakers { get; set; } = new List<string>();
 
         public override string ToString()
         {

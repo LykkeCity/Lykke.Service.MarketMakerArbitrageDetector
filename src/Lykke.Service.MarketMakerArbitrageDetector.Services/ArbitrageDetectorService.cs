@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Autofac;
 using Common;
 using Common.Log;
-using JetBrains.Annotations;
 using Lykke.Common.Log;
 using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain;
 using Lykke.Service.MarketMakerArbitrageDetector.Core.Services;
@@ -31,7 +30,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
             _orderBooksService = orderBooksService;
             _log = logFactory.CreateLog(this);
 
-            var executionInterval = _settingsService.Get().ExecutionInterval;
+            var executionInterval = GetSettings().ExecutionInterval;
             _trigger = new TimerTrigger(nameof(ArbitrageDetectorService), executionInterval, logFactory, Execute);
         }
 
@@ -120,7 +119,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
 
         private void Execute()
         {
-            var orderBooks = GetOrderBooksWithWantedLimitOrders();
+            var orderBooks = GetOrderBooksFilteredByWallets();
             var lykkeArbitrages = GetArbitrages(orderBooks);
             RefreshArbitrages(lykkeArbitrages);
         }
@@ -160,12 +159,14 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                         decimal volume = 0;
                         decimal pnL = 0;
                         string targetSide = null;
+                        IReadOnlyList<string> marketMakers = new List<string>();
 
                         if (target.BestBid?.Price > synthOrderBook.BestAsk?.Price)
                         {
                             spread = Arbitrage.GetSpread(target.BestBid.Price, synthOrderBook.BestAsk.Price);
                             var volumePnL = Arbitrage.GetArbitrageVolumeAndPnL(target.Bids, synthOrderBook.Asks);
                             targetSide = "Bid";
+                            marketMakers = GetMarketMakers(target.BestBid, synthOrderBook.OriginalOrderBooks.Select(x => x.BestAsk));
 
                             Debug.Assert(volumePnL?.Volume != null);
                             Debug.Assert(volumePnL?.PnL != null);
@@ -176,6 +177,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                             spread = Arbitrage.GetSpread(synthOrderBook.BestBid.Price, target.BestAsk.Price);
                             var volumePnL = Arbitrage.GetArbitrageVolumeAndPnL(synthOrderBook.Bids, target.Asks);
                             targetSide = "Ask";
+                            marketMakers = GetMarketMakers(target.BestAsk, synthOrderBook.OriginalOrderBooks.Select(x => x.BestBid));
 
                             Debug.Assert(volumePnL?.Volume != null);
                             Debug.Assert(volumePnL?.PnL != null);
@@ -200,7 +202,8 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                             target.BestBid?.Price,
                             target.BestAsk?.Price,
                             synthOrderBook.BestBid?.Price,
-                            synthOrderBook.BestAsk?.Price
+                            synthOrderBook.BestAsk?.Price,
+                            marketMakers
                         );
                         result.Add(lykkeArbitrage);
                     }
@@ -214,6 +217,27 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
             return result.ToList();
         }
 
+        private IReadOnlyList<string> GetMarketMakers(LimitOrder originalPrice, IEnumerable<LimitOrder> synthPrices)
+        {
+            var result = new List<string>();
+
+            var wallets = GetSettings().Wallets;
+
+            if (wallets.Any())
+            {
+                if (wallets.ContainsKey(originalPrice.WalletId))
+                    result.Add(wallets[originalPrice.WalletId]);
+
+                foreach (var synthPrice in synthPrices)
+                {
+                    if (wallets.ContainsKey(synthPrice.WalletId))
+                        result.Add(wallets[synthPrice.WalletId]);
+                }
+            }
+
+            return result;
+        }
+
         private void RefreshArbitrages(IEnumerable<Arbitrage> lykkeArbitrages)
         {
             lock (_sync)
@@ -223,11 +247,11 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
             }
         }
 
-        private IReadOnlyCollection<OrderBook> GetOrderBooksWithWantedLimitOrders()
+        private IReadOnlyCollection<OrderBook> GetOrderBooksFilteredByWallets()
         {
             var allOrderBooks = _orderBooksService.GetAll();
 
-            var wallets = _settingsService.Get().Wallets;
+            var wallets = GetSettings().Wallets;
             if (!wallets.Any())
                 return allOrderBooks;
 
@@ -246,6 +270,11 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
             }
 
             return result;
+        }
+
+        private Settings GetSettings()
+        {
+            return _settingsService.GetAsync().GetAwaiter().GetResult();
         }
 
         #region IStartable, IStopable

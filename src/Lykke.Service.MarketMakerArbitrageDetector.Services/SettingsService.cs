@@ -1,4 +1,5 @@
-﻿using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain;
+﻿using System.Threading.Tasks;
+using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain;
 using Lykke.Service.MarketMakerArbitrageDetector.Core.Repositories;
 using Lykke.Service.MarketMakerArbitrageDetector.Core.Services;
 
@@ -6,8 +7,9 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
 {
     public class SettingsService : ISettingsService
     {
-        private object _sync = new object();
+        private readonly object _sync = new object();
         private Settings _settings;
+        private Settings Settings { get { lock(_sync) { return _settings; } }  set { lock(_sync) { _settings = value; } } }
         private readonly ISettingsRepository _settingsRepository;
 
         public SettingsService(ISettingsRepository settingsRepository)
@@ -15,27 +17,21 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
             _settingsRepository = settingsRepository;
         }
 
-        public Settings Get()
+        public async Task<Settings> GetAsync()
         {
-            lock (_sync)
-            {
-                if (_settings == null)
-                    _settings = _settingsRepository.GetAsync().GetAwaiter().GetResult();
+            if (Settings == null)
+                Settings = await _settingsRepository.GetAsync();
 
-                if (_settings == null)
-                    _settingsRepository.InsertOrReplaceAsync(new Settings()).GetAwaiter().GetResult();
+            if (Settings == null)
+                await _settingsRepository.InsertOrReplaceAsync(new Settings());
 
-                return _settings;
-            }
+            return Settings;
         }
 
-        public void Set(Settings settings)
+        public async Task SetAsync(Settings settings)
         {
-            lock (_sync)
-            {
-                _settings = settings;
-                _settingsRepository.InsertOrReplaceAsync(settings).GetAwaiter().GetResult();
-            }
+            Settings = settings;
+            await _settingsRepository.InsertOrReplaceAsync(settings);
         }
     }
 }
