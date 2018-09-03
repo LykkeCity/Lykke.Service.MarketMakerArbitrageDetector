@@ -335,7 +335,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
             foreach (var walletId in allFoundWalletIds)
                 result.Add(wallets[walletId]);
 
-            return result;
+            return result.Distinct().OrderBy(x => x).ToList();
         }
 
         private static OrderBook Convert(CacheProviderOrderBook orderBook)
