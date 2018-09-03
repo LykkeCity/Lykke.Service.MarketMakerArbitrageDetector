@@ -225,12 +225,12 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
 
             if (wallets.Any())
             {
-                if (wallets.ContainsKey(originalPrice.WalletId))
+                if (wallets.ContainsKey(originalPrice.WalletId) && !result.Contains(wallets[originalPrice.WalletId]))
                     result.Add(wallets[originalPrice.WalletId]);
 
                 foreach (var synthPrice in synthPrices)
                 {
-                    if (wallets.ContainsKey(synthPrice.WalletId))
+                    if (wallets.ContainsKey(synthPrice.WalletId) && !result.Contains(wallets[synthPrice.WalletId]))
                         result.Add(wallets[synthPrice.WalletId]);
                 }
             }
