@@ -6,6 +6,8 @@
 
         public string WalletId { get; set; }
 
+        public string WalletName { get; set; }
+
         public decimal Price { get; set; }
 
         public decimal Volume { get; set; }        

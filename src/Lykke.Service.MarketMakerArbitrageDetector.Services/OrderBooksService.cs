@@ -72,17 +72,14 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                         x.AsksVolume,
                         ConvertToUsd(x.AssetPair.Base.Id, x.AsksVolume),
                         x.Timestamp,
-                        GetMarketMakers(x).Values
+                        GetMarketMakers(x)
                     )).OrderBy(x => x.AssetPair.Name).ToList();
             }
         }
 
         public OrderBook Get(string assetPairId)
         {
-            lock (_sync)
-            {
-                return _lykkeOrderBooks.Values.SingleOrDefault(x => x.AssetPair.Id == assetPairId);
-            }
+            return GetFilteredByWallets().SingleOrDefault(x => x.AssetPair.Id == assetPairId);
         }
 
         public IReadOnlyList<OrderBook> GetFilteredByWallets()
@@ -321,9 +318,9 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
             }
         }
 
-        private Dictionary<string, string> GetMarketMakers(OrderBook orderBook)
+        private IReadOnlyList<string> GetMarketMakers(OrderBook orderBook)
         {
-            var result = new Dictionary<string, string>();
+            var result = new List<string>();
 
             var wallets = GetSettings().Wallets;
             var walletIds = wallets.Keys;
@@ -336,7 +333,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
             var allFoundWalletIds = bidsWalletIds.Union(asksWalletIds);
 
             foreach (var walletId in allFoundWalletIds)
-                result[walletId] = wallets[walletId];
+                result.Add(wallets[walletId]);
 
             return result;
         }

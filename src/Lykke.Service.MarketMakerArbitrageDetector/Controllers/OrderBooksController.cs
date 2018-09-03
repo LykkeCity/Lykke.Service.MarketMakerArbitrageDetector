@@ -14,14 +14,16 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Controllers
     public class OrderBooksController : Controller, IOrderBooksApi
     {
         private readonly IOrderBooksService _orderBooksService;
+        private readonly ISettingsService _settingsService;
 
-        public OrderBooksController(IOrderBooksService orderBooksService)
+        public OrderBooksController(IOrderBooksService orderBooksService, ISettingsService settingsService)
         {
             _orderBooksService = orderBooksService;
+            _settingsService = settingsService;
         }
 
         [HttpGet]
-        [SwaggerOperation("OrderBooksGetAll")]
+        [SwaggerOperation("OrderBooksGetAllRaws")]
         [ProducesResponseType(typeof(IReadOnlyList<OrderBookRow>), (int)HttpStatusCode.OK)]
         public Task<IReadOnlyCollection<OrderBookRow>> GetAllRowsAsync(bool wantedOnly = true)
         {
@@ -34,12 +36,21 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Controllers
         [HttpGet("{assetPairId}")]
         [SwaggerOperation("OrderBooksGet")]
         [ProducesResponseType(typeof(OrderBook), (int)HttpStatusCode.OK)]
-        public Task<OrderBook> GetAsync(string assetPairId)
+        public async Task<OrderBook> GetAsync(string assetPairId)
         {
             var domain = _orderBooksService.Get(assetPairId);
             var model = Mapper.Map<OrderBook>(domain);
 
-            return Task.FromResult(model);
+            // Map wallets names
+            var wallets = (await _settingsService.GetAsync()).Wallets;
+            foreach (var ask in model.Asks)
+                if (wallets.ContainsKey(ask.WalletId))
+                    ask.WalletName = wallets[ask.WalletId];
+            foreach (var bid in model.Bids)
+                if (wallets.ContainsKey(bid.WalletId))
+                    bid.WalletName = wallets[bid.WalletId];
+
+            return model;
         }
     }
 }
