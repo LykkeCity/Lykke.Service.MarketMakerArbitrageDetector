@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Common.Log;
-using JetBrains.Annotations;
 using Lykke.Common.Log;
 using Lykke.Job.OrderBooksCacheProvider.Client;
 using Lykke.Service.Assets.Client;
@@ -18,7 +17,6 @@ using CacheProviderOrderBook = Lykke.Job.OrderBooksCacheProvider.Client.OrderBoo
 
 namespace Lykke.Service.MarketMakerArbitrageDetector.Services
 {
-    [UsedImplicitly]
     public class OrderBooksService : IOrderBooksService, ILykkeOrderBookHandler
     {
         private const string LykkeExchangeName = "lykke";

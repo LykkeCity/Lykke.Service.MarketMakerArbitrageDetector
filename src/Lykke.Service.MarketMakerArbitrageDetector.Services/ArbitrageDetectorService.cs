@@ -165,22 +165,24 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                         {
                             spread = Arbitrage.GetSpread(target.BestBid.Price, synthOrderBook.BestAsk.Price);
                             var volumePnL = Arbitrage.GetArbitrageVolumeAndPnL(target.Bids, synthOrderBook.Asks);
-                            targetSide = "Bid";
-                            marketMakers = GetMarketMakers(target.BestBid, synthOrderBook.OriginalOrderBooks.Select(x => x.BestAsk));
-
                             Debug.Assert(volumePnL?.Volume != null);
                             Debug.Assert(volumePnL?.PnL != null);
+                            targetSide = "Bid";
+                            marketMakers = GetMarketMakers(target.BestBid, synthOrderBook.OriginalOrderBooks.Select(x => x.BestAsk));
+                            volume = volumePnL.Value.Volume;
+                            pnL = volumePnL.Value.PnL;
                         }
 
                         if (synthOrderBook.BestBid?.Price > target.BestAsk?.Price)
                         {
                             spread = Arbitrage.GetSpread(synthOrderBook.BestBid.Price, target.BestAsk.Price);
                             var volumePnL = Arbitrage.GetArbitrageVolumeAndPnL(synthOrderBook.Bids, target.Asks);
-                            targetSide = "Ask";
-                            marketMakers = GetMarketMakers(target.BestAsk, synthOrderBook.OriginalOrderBooks.Select(x => x.BestBid));
-
                             Debug.Assert(volumePnL?.Volume != null);
                             Debug.Assert(volumePnL?.PnL != null);
+                            targetSide = "Ask";
+                            marketMakers = GetMarketMakers(target.BestAsk, synthOrderBook.OriginalOrderBooks.Select(x => x.BestBid));
+                            volume = volumePnL.Value.Volume;
+                            pnL = volumePnL.Value.PnL;
                         }
 
                         if (targetSide == null) // no arbitrages
