@@ -207,7 +207,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
             var assets = _assetsService.AssetGetAll();
             foreach (var asset in assets)
             {
-                _assets[asset.Id] = new Asset(asset.Id, asset.Name);
+                _assets[asset.Id] = new Asset(asset.Id, GetShortestName(asset.Id, asset.Name, asset.DisplayId));
             }
 
             _log.Info($"Initialized {_assets.Count} of {assets.Count} assets.");
@@ -356,6 +356,12 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
             var result = new OrderBook(LykkeExchangeName, new AssetPair(orderBook.AssetPair), bids, asks, orderBook.Timestamp);
 
             return result;
+        }
+
+        private static string GetShortestName(string id, string name, string displayId)
+        {
+            var allNames = new List<string> { id, name, displayId };
+            return allNames.Where(x => x != null).MinBy(x => x.Length);
         }
 
         private Settings GetSettings()
