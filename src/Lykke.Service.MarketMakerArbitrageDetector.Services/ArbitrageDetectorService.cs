@@ -126,7 +126,8 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
 
         private IEnumerable<Arbitrage> GetArbitrages(IReadOnlyCollection<OrderBook> orderBooks)
         {
-            orderBooks = orderBooks.Where(x => x.BestBid != null || x.BestAsk != null).ToList();
+            orderBooks = orderBooks.Where(x => x.BestBid != null || x.BestAsk != null)
+                .OrderBy(x => x.AssetPair.Name).ToList();
 
             var result = new List<Arbitrage>();
 
@@ -205,7 +206,8 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                             target.BestAsk?.Price,
                             synthOrderBook.BestBid?.Price,
                             synthOrderBook.BestAsk?.Price,
-                            marketMakers
+                            marketMakers,
+                            DateTime.UtcNow
                         );
                         result.Add(lykkeArbitrage);
                     }
