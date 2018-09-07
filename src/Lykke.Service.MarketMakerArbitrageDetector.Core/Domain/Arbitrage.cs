@@ -93,7 +93,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
                 {
                     volume += bid.Volume;
                     pnl += bid.Volume * (tradeBidPrice - tradeAskPrice);
-                    ask.Volume = ask.Volume - bid.Volume;
+                    ask.SubtractVolume(bid.Volume);
 
                     if (!orderedBidsEnumerator.MoveNext()) break;
                     bid = orderedBidsEnumerator.Current;
@@ -102,7 +102,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
                 {
                     volume += ask.Volume;
                     pnl += ask.Volume * (tradeBidPrice - tradeAskPrice);
-                    bid.Volume = bid.Volume - ask.Volume;
+                    bid.SubtractVolume(ask.Volume);
 
                     if (!orderedAsksEnumerator.MoveNext()) break;
                     ask = orderedAsksEnumerator.Current;

@@ -10,7 +10,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 
         public decimal Price { get; }
 
-        public decimal Volume { get; set; }
+        public decimal Volume { get; private set; }
 
 
         public LimitOrder(string orderId, string walletId, decimal price, decimal volume)
@@ -25,6 +25,11 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
         {
             Price = price;
             Volume = volume;
+        }
+
+        public void SubtractVolume(decimal volume)
+        {
+            Volume -= volume;
         }
 
         public LimitOrder Reciprocal()
