@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector.Client.Models
 {
@@ -89,6 +90,11 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Client.Models
         /// List of merket makers in this arbitrage.
         /// </summary>
         public IReadOnlyList<string> MarketMakers { get; set; } = new List<string>();
+
+        /// <summary>
+        /// Timestamp of an arbitrage creation, in UTC.
+        /// </summary>
+        public DateTime Timestamp { get; set; }
 
         /// <inheritdoc />
         public override string ToString()

@@ -15,9 +15,9 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 
         public IEnumerable<LimitOrder> Asks => OrderedLimitOrders(GetAsks);
 
-        public LimitOrder BestBid => Bids.FirstOrDefault();
+        public LimitOrder BestBid { get; }
 
-        public LimitOrder BestAsk => Asks.FirstOrDefault();
+        public LimitOrder BestAsk { get; }
 
         public IReadOnlyList<OrderBook> OriginalOrderBooks { get; }
 
@@ -30,6 +30,8 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
         {
             AssetPair = assetPair;
             OriginalOrderBooks = originalOrderBooks;
+            BestBid = Bids.FirstOrDefault();
+            BestAsk = Asks.FirstOrDefault();
         }
 
 

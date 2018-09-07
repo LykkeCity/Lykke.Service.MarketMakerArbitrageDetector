@@ -36,11 +36,13 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 
         public decimal? SynthBid { get; }
 
+        public DateTime Timestamp { get; }
+
         public IReadOnlyList<string> MarketMakers { get; }
 
         public Arbitrage(AssetPair target, AssetPair source, decimal spread, string targetSide, string conversionPath,
             decimal volume, decimal? volumeInUsd, decimal pnL, decimal? pnLInUsd, decimal? targetBid, decimal? targetAsk,
-            decimal? synthBid, decimal? synthAsk, IReadOnlyList<string> marketMakers)
+            decimal? synthBid, decimal? synthAsk, IReadOnlyList<string> marketMakers, DateTime timestamp)
         {
             Target = target;
             Source = source;
@@ -56,6 +58,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
             SynthBid = synthBid;
             SynthAsk = synthAsk;
             MarketMakers = marketMakers;
+            Timestamp = timestamp;
         }
 
         public static decimal GetSpread(decimal bidPrice, decimal askPrice)
@@ -90,7 +93,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
                 {
                     volume += bid.Volume;
                     pnl += bid.Volume * (tradeBidPrice - tradeAskPrice);
-                    ask.Volume = ask.Volume - bid.Volume;
+                    ask.SubtractVolume(bid.Volume);
 
                     if (!orderedBidsEnumerator.MoveNext()) break;
                     bid = orderedBidsEnumerator.Current;
@@ -99,7 +102,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
                 {
                     volume += ask.Volume;
                     pnl += ask.Volume * (tradeBidPrice - tradeAskPrice);
-                    bid.Volume = bid.Volume - ask.Volume;
+                    bid.SubtractVolume(ask.Volume);
 
                     if (!orderedAsksEnumerator.MoveNext()) break;
                     ask = orderedAsksEnumerator.Current;
