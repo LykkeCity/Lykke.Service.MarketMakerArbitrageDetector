@@ -24,3 +24,9 @@ SlackNotifications:
 MonitoringServiceClient:
     MonitoringServiceUrl:
         settings-key: MonitoringServiceUrl
+AssetsServiceClient:
+    AssetsServiceUrl:
+        settings-key: AssetsServiceUrl
+OrderBooksCacheProviderClient:
+    OrderBooksCacheProviderServiceUrl:
+        settings-key: OrderBooksCacheProviderServiceUrl
