@@ -25,8 +25,8 @@ MonitoringServiceClient:
     MonitoringServiceUrl:
         settings-key: MonitoringServiceUrl
 AssetsServiceClient:
-    AssetsServiceUrl:
+    ServiceUrl:
         settings-key: AssetsServiceUrl
 OrderBooksCacheProviderClient:
-    OrderBooksCacheProviderServiceUrl:
+    ServiceUrl:
         settings-key: OrderBooksCacheProviderServiceUrl
