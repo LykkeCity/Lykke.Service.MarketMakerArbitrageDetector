@@ -1,6 +1,4 @@
 MarketMakerArbitrageDetectorService:
-    ExecutionInterval:
-        settings-key: MarketMakerArbitrageDetectorService-ExecutionInterval
     Db:
         DataConnectionString:
             settings-key: MarketMakerArbitrageDetectorService-DataConnectionString
@@ -10,13 +8,11 @@ MarketMakerArbitrageDetectorService:
             settings-key: LogsConnString
             types:
               - AzureTableStorage
-        RabbitMq:
-            ConnectionString:
-                settings-key: RabbitAlphaEngine
-            Exchanges:
-                settings-key: MarketMakerArbitrageDetectorService-Exchanges
-                types:
-                  - JsonArray
+    RabbitMq:
+        ConnectionString:
+            settings-key: RabbitAlphaEngine
+        Exchange:
+            settings-key: LykkeOrderBooksRabbitExchangeName
 SlackNotifications:
     AzureQueue:
         ConnectionString:
