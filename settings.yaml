@@ -5,7 +5,7 @@ MarketMakerArbitrageDetectorService:
             types:
               - AzureTableStorage
         LogsConnectionString:
-            settings-key: LogsConnString
+            settings-key: MarketMakerArbitrageDetectorService-LogsConnString
             types:
               - AzureTableStorage
     RabbitMq:
