@@ -10,7 +10,7 @@ MarketMakerArbitrageDetectorService:
               - AzureTableStorage
     RabbitMq:
         ConnectionString:
-            settings-key: RabbitAlphaEngine
+            settings-key: MatchingEngine-OrderBookRabbit
         Exchange:
             settings-key: LykkeOrderBooksRabbitExchangeName
 SlackNotifications:
