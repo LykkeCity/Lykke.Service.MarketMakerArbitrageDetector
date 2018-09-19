@@ -169,7 +169,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                             Debug.Assert(volumePnL?.Volume != null);
                             Debug.Assert(volumePnL?.PnL != null);
                             targetSide = "Bid";
-                            marketMakers = GetMarketMakers(target.BestBid, synthOrderBook.OriginalOrderBooks.Select(x => x.BestAsk));
+                            marketMakers = GetMarketMakers(target.BestBid, synthOrderBook.GetLimitOrdersOfBestAsk());
                             volume = volumePnL.Value.Volume;
                             pnL = volumePnL.Value.PnL;
                         }
@@ -181,7 +181,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
                             Debug.Assert(volumePnL?.Volume != null);
                             Debug.Assert(volumePnL?.PnL != null);
                             targetSide = "Ask";
-                            marketMakers = GetMarketMakers(target.BestAsk, synthOrderBook.OriginalOrderBooks.Select(x => x.BestBid));
+                            marketMakers = GetMarketMakers(target.BestAsk, synthOrderBook.GetLimitOrdersOfBestBid());
                             volume = volumePnL.Value.Volume;
                             pnL = volumePnL.Value.PnL;
                         }
@@ -216,7 +216,8 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
 
             watch.Stop();
             if (watch.ElapsedMilliseconds > 1000)
-                _log.Info($"{watch.ElapsedMilliseconds} ms, {result.Count} arbitrages, {orderBooks.Count} order books, {synthsCount} synthetic order books created.");
+                _log.Info($"Performance issue - {watch.ElapsedMilliseconds} ms, {result.Count} arbitrages, {orderBooks.Count} order books," +
+                          $"{synthsCount} synthetic order books created.");
 
             return result.ToList();
         }

@@ -11,9 +11,9 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
 
         public AssetPair AssetPair { get; }
 
-        public IEnumerable<LimitOrder> Bids => OrderedLimitOrders(GetBids);
+        public IEnumerable<LimitOrder> Bids => OrderedLimitOrders(GetBids); // TODO: Try to cache
 
-        public IEnumerable<LimitOrder> Asks => OrderedLimitOrders(GetAsks);
+        public IEnumerable<LimitOrder> Asks => OrderedLimitOrders(GetAsks); // TODO: Try to cache
 
         public LimitOrder BestBid { get; }
 
@@ -302,6 +302,56 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
                 foreach (var order in GetOrderedLimitOrders(leftOrders, middleOrders, rightOrders))
                     yield return order;
             }
+        }
+
+        public IEnumerable<LimitOrder> GetLimitOrdersOfBestBid()
+        {
+            return GetLimitOrdersOfBestPrice(GetBids);
+        }
+
+        public IEnumerable<LimitOrder> GetLimitOrdersOfBestAsk()
+        {
+            return GetLimitOrdersOfBestPrice(GetAsks);
+        }
+
+        private IEnumerable<LimitOrder> GetLimitOrdersOfBestPrice(Func<OrderBook, AssetPair, IEnumerable<LimitOrder>> getOrdersMethod)
+        {
+            var prepared = PrepareForEnumeration(OriginalOrderBooks, AssetPair);
+
+            if (prepared.Count == 1)
+            {
+                var keyValue = prepared.ElementAt(0);
+                var bestOrder = getOrdersMethod(keyValue.Value, keyValue.Key).FirstOrDefault();
+                return bestOrder == null ? new LimitOrder[0] : new[] { bestOrder };
+            }
+
+            if (prepared.Count == 2)
+            {
+                var left = prepared.ElementAt(0);
+                var right = prepared.ElementAt(1);
+
+                var leftBestOrder = getOrdersMethod(left.Value, left.Key).FirstOrDefault();
+                var rightBestOrder = getOrdersMethod(right.Value, right.Key).FirstOrDefault();
+
+                return leftBestOrder == null || rightBestOrder == null
+                    ? new LimitOrder[0] : new[] { leftBestOrder, rightBestOrder };
+            }
+
+            if (prepared.Count == 3)
+            {
+                var left = prepared.ElementAt(0);
+                var middle = prepared.ElementAt(1);
+                var right = prepared.ElementAt(2);
+
+                var leftBestOrder = getOrdersMethod(left.Value, left.Key).FirstOrDefault();
+                var middleBestOrder = getOrdersMethod(middle.Value, middle.Key).FirstOrDefault();
+                var rightBestOrder = getOrdersMethod(right.Value, right.Key).FirstOrDefault();
+
+                return leftBestOrder == null || middleBestOrder == null || rightBestOrder == null
+                    ? new LimitOrder[0] : new[] { leftBestOrder, middleBestOrder, rightBestOrder };
+            }
+
+            throw new InvalidOperationException("Invalid original order books count in synthetic order book.");
         }
 
         private static IEnumerable<LimitOrder> GetOrderedLimitOrders(IEnumerable<LimitOrder> leftOrders,
