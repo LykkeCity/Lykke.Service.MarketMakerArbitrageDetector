@@ -11,7 +11,7 @@ using Lykke.Service.MarketMakerArbitrageDetector.Settings;
 namespace Lykke.Service.MarketMakerArbitrageDetector.RabbitMQ.Publishers
 {
     [UsedImplicitly]
-    public class MarketMakersPublisher : IMarketMakersPublisher, IStartable, IStopable
+    public class MarketMakersPublisher : IMarketMakersPublisher
     {
         private readonly ILogFactory _logFactory;
         private readonly RabbitMqSettings _settings;

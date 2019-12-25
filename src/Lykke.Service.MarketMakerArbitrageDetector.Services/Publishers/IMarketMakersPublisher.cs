@@ -5,5 +5,9 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services.Publishers
     public interface IMarketMakersPublisher
     {
         void Publish(MarketMakers marketMakers);
+
+        void Start();
+
+        void Stop();
     }
 }

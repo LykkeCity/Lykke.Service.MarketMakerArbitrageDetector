@@ -5,7 +5,9 @@ using Lykke.Job.OrderBooksCacheProvider.Client;
 using Lykke.Sdk;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.MarketMakerArbitrageDetector.Managers;
+using Lykke.Service.MarketMakerArbitrageDetector.RabbitMQ.Publishers;
 using Lykke.Service.MarketMakerArbitrageDetector.RabbitMQ.Subscribers;
+using Lykke.Service.MarketMakerArbitrageDetector.Services.Publishers;
 using Lykke.Service.MarketMakerArbitrageDetector.Settings;
 using Lykke.SettingsReader;
 
@@ -45,6 +47,11 @@ namespace Lykke.Service.MarketMakerArbitrageDetector
 
             builder.RegisterType<LykkeOrderBookSubscriber>()
                 .AsSelf()
+                .WithParameter(TypedParameter.From(exchangesSettings))
+                .SingleInstance();
+
+            builder.RegisterType<MarketMakersPublisher>()
+                .As<IMarketMakersPublisher>()
                 .WithParameter(TypedParameter.From(exchangesSettings))
                 .SingleInstance();
         }
