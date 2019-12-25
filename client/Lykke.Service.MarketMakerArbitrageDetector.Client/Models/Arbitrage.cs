@@ -4,13 +4,13 @@ using System.Collections.Generic;
 namespace Lykke.Service.MarketMakerArbitrageDetector.Client.Models
 {
     /// <summary>
-    /// Represents an arbitrage oportunity between two order books - with target and source asset pairs.
+    /// Represents an arbitrage between two order books - with target and source asset pairs.
     /// Order book with source asset pair usually synthetic i.e. compiled of 2-3 original order books.
     /// </summary>
     public class Arbitrage
     {
         /// <summary>
-        /// Asset pair of targer order book.
+        /// Asset pair of target order book.
         /// </summary>
         public AssetPair Target { get; set; }
 
@@ -87,7 +87,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Client.Models
         public decimal? SynthBid { get; set; }
 
         /// <summary>
-        /// List of merket makers in this arbitrage.
+        /// List of market makers in this arbitrage.
         /// </summary>
         public IReadOnlyList<string> MarketMakers { get; set; } = new List<string>();
 

@@ -10,5 +10,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Settings
         public string ConnectionString { get; set; }
 
         public string Exchange { get; set; }
+
+        public string MarketMakersExchange { get; set; }
     }
 }

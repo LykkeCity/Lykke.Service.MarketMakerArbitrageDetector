@@ -485,7 +485,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Core.Domain
             var bids = orderBook.Bids;
             var asks = orderBook.Asks;
 
-            // Streight
+            // Straight
             if (orderBook.AssetPair.Base.Id == target.Base.Id &&
                 orderBook.AssetPair.Quote.Id == target.Quote.Id)
             {
