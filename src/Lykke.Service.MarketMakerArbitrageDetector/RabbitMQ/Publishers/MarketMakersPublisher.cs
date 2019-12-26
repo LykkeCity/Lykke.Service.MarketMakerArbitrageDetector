@@ -14,11 +14,11 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.RabbitMQ.Publishers
     public class MarketMakersPublisher : IMarketMakersPublisher
     {
         private readonly ILogFactory _logFactory;
-        private readonly RabbitMqSettings _settings;
+        private readonly MainRabbitMqSettings _settings;
         private RabbitMqPublisher<Contract.MarketMakers> _publisher;
         private readonly ILog _log;
 
-        public MarketMakersPublisher(RabbitMqSettings settings, ILogFactory logFactory)
+        public MarketMakersPublisher(MainRabbitMqSettings settings, ILogFactory logFactory)
         {
             _logFactory = logFactory;
             _settings = settings;
