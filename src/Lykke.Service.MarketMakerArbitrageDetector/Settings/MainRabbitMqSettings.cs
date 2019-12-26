@@ -4,11 +4,11 @@ using Lykke.SettingsReader.Attributes;
 namespace Lykke.Service.MarketMakerArbitrageDetector.Settings
 {
     [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
-    public class RabbitMqSettings
+    public class MainRabbitMqSettings
     {
         [AmqpCheck]
         public string ConnectionString { get; set; }
 
-        public string Exchange { get; set; }
+        public string MarketMakersExchange { get; set; }
     }
 }

@@ -43,16 +43,18 @@ namespace Lykke.Service.MarketMakerArbitrageDetector
 
         private void RegisterRabbit(ContainerBuilder builder)
         {
-            var exchangesSettings = _settings.CurrentValue.MarketMakerArbitrageDetectorService.RabbitMq;
+            var meRabbitSettings = _settings.CurrentValue.MarketMakerArbitrageDetectorService.RabbitMq;
 
             builder.RegisterType<LykkeOrderBookSubscriber>()
                 .AsSelf()
-                .WithParameter(TypedParameter.From(exchangesSettings))
+                .WithParameter(TypedParameter.From(meRabbitSettings))
                 .SingleInstance();
+
+            var pricesRabbitSettings = _settings.CurrentValue.MarketMakerArbitrageDetectorService.MainRabbitMq;
 
             builder.RegisterType<MarketMakersPublisher>()
                 .As<IMarketMakersPublisher>()
-                .WithParameter(TypedParameter.From(exchangesSettings))
+                .WithParameter(TypedParameter.From(pricesRabbitSettings))
                 .SingleInstance();
         }
 

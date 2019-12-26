@@ -13,8 +13,11 @@ MarketMakerArbitrageDetectorService:
             settings-key: MatchingEngine-OrderBookRabbit
         Exchange:
             settings-key: LykkeOrderBooksRabbitExchangeName
+    MainRabbitMq:
+        ConnectionString:
+            settings-key: RawPriceRabbitMq
         MarketMakersExchange:
-            settings-key: MarketMakersPublishingRabbitExchangeName
+            settings-key: MarketMakerArbitrageDetector-MarketMakersPublishingRabbitExchangeName
 SlackNotifications:
     AzureQueue:
         ConnectionString:

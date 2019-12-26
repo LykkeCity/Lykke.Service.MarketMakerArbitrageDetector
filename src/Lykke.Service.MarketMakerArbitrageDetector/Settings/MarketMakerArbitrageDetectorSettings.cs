@@ -8,5 +8,7 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Settings
         public DbSettings Db { get; set; }
 
         public RabbitMqSettings RabbitMq { get; set; }
+
+        public MainRabbitMqSettings MainRabbitMq { get; set; }
     }
 }
