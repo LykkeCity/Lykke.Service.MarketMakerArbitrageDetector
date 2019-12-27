@@ -30,7 +30,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.MarketMakerAr
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "5. Tests", "5. Tests", "{8F9036B1-5106-4C69-B2D2-B78EE52687A0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.Service.MarketMakerArbitrageDetector.Contract", "Lykke.Service.MarketMakerArbitrageDetector.Contract\Lykke.Service.MarketMakerArbitrageDetector.Contract.csproj", "{56F8D7DB-D861-4880-925E-31C7BE57332D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.MarketMakerArbitrageDetector.Contract", "Lykke.Service.MarketMakerArbitrageDetector.Contract\Lykke.Service.MarketMakerArbitrageDetector.Contract.csproj", "{56F8D7DB-D861-4880-925E-31C7BE57332D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "4. Contract", "4. Contract", "{AD8520FE-6FCD-4ABD-BB28-E9635053E7FE}"
 EndProject

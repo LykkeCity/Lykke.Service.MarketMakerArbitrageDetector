@@ -29,6 +29,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\client\Lykke.Service.MarketMakerArbitrageDetector.Client\Lykke.Service.MarketMakerArbitrageDetector.Client.csproj" />
+    <ProjectReference Include="..\..\Lykke.Service.MarketMakerArbitrageDetector.Contract\Lykke.Service.MarketMakerArbitrageDetector.Contract.csproj" />
     <ProjectReference Include="..\Lykke.Service.MarketMakerArbitrageDetector.AzureRepositories\Lykke.Service.MarketMakerArbitrageDetector.AzureRepositories.csproj" />
     <ProjectReference Include="..\Lykke.Service.MarketMakerArbitrageDetector.Core\Lykke.Service.MarketMakerArbitrageDetector.Core.csproj" />
     <ProjectReference Include="..\Lykke.Service.MarketMakerArbitrageDetector.Services\Lykke.Service.MarketMakerArbitrageDetector.Services.csproj" />
