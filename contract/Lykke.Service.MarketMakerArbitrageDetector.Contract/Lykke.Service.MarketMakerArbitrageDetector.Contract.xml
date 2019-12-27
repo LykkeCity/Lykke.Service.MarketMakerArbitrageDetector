@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Lykke.Service.MarketMakerArbitrageDetector.Contract</name>
+    </assembly>
+    <members>
+        <member name="T:Lykke.Service.MarketMakerArbitrageDetector.Contract.Arbitrages">
+            <summary>
+            Represents an arbitrage between two order books - with target and source asset pairs.
+            Order book with source asset pair usually synthetic i.e. compiled of 2-3 original order books.
+            </summary>
+        </member>
+        <member name="T:Lykke.Service.MarketMakerArbitrageDetector.Contract.Asset">
+            <summary>
+            Represents an asset.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.MarketMakerArbitrageDetector.Contract.Asset.Id">
+            <summary>
+            Unique identifier of the asset.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.MarketMakerArbitrageDetector.Contract.Asset.Name">
+            <summary>
+            Display name of the asset.
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.MarketMakerArbitrageDetector.Contract.Asset.ToString">
+            <inheritdoc />
+        </member>
+        <member name="T:Lykke.Service.MarketMakerArbitrageDetector.Contract.AssetPair">
+            <summary>
+            Represents an asset pair.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.MarketMakerArbitrageDetector.Contract.AssetPair.Id">
+            <summary>
+            Unique identifier of the asset pair.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.MarketMakerArbitrageDetector.Contract.AssetPair.Name">
+            <summary>
+            Display name of the asset pair.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.MarketMakerArbitrageDetector.Contract.AssetPair.Base">
+            <summary>
+            Base asset.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.MarketMakerArbitrageDetector.Contract.AssetPair.Quote">
+            <summary>
+            Quote asset.
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.MarketMakerArbitrageDetector.Contract.AssetPair.ToString">
+            <inheritdoc />
+        </member>
+        <member name="T:Lykke.Service.MarketMakerArbitrageDetector.Contract.MarketMakers">
+            <summary>
+            Represents a list of market makers that are in arbitrages.
+            </summary>
+        </member>
+    </members>
+</doc>

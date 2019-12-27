@@ -14,7 +14,7 @@
     <PackageReference Include="Lykke.Service.Assets.Client" Version="4.4.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Lykke.Service.MarketMakerArbitrageDetector.Contract\Lykke.Service.MarketMakerArbitrageDetector.Contract.csproj" />
+    <ProjectReference Include="..\..\contract\Lykke.Service.MarketMakerArbitrageDetector.Contract\Lykke.Service.MarketMakerArbitrageDetector.Contract.csproj" />
     <ProjectReference Include="..\Lykke.Service.MarketMakerArbitrageDetector.Core\Lykke.Service.MarketMakerArbitrageDetector.Core.csproj" />
   </ItemGroup>
 </Project>
