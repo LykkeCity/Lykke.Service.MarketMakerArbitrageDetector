@@ -1,7 +1,29 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <Version>1.0.1</Version>
+    <Authors>Lykke</Authors>
+    <Company>Lykke</Company>
+    <Product>Lykke.Service.MarketMakerArbitrageDetector</Product>
+    <Description>Contract for Lykke.Service.MarketMakerArbitrageDetector API</Description>
+    <PackageLicenseUrl>https://github.com/LykkeCity/Lykke.Service.MarketMakerArbitrageDetector/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/LykkeCity/Lykke.Service.MarketMakerArbitrageDetector</PackageProjectUrl>
+    <PackageIconUrl>https://avatars3.githubusercontent.com/u/14153330?v=3&amp;s=200</PackageIconUrl>
+    <RepositoryUrl>https://github.com/LykkeCity/Lykke.Service.MarketMakerArbitrageDetector.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>Lykke</PackageTags>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile>
+    <NoWarn>1701;1702;1591</NoWarn>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Lykke.Service.MarketMakerArbitrageDetector.Contract.xml" />
+  </ItemGroup>
 
 </Project>
