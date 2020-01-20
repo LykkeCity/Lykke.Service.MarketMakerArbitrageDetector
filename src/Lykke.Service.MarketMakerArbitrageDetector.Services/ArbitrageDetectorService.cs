@@ -139,6 +139,8 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
             foreach (var x in lykkeArbitrages)
                 allMarketMakers.AddRange(x.MarketMakers);
             allMarketMakers = allMarketMakers.Distinct().ToList();
+            if (allMarketMakers.Count == 0)
+                return;
             var marketMakers = new MarketMakers { Names = allMarketMakers, Timestamp = DateTime.UtcNow };
             _marketMakersPublisher.Publish(marketMakers);
         }
