@@ -12,6 +12,7 @@ using Lykke.Service.MarketMakerArbitrageDetector.Contract;
 using Lykke.Service.MarketMakerArbitrageDetector.Core.Domain;
 using Lykke.Service.MarketMakerArbitrageDetector.Core.Services;
 using Lykke.Service.MarketMakerArbitrageDetector.Services.Publishers;
+using Microsoft.Extensions.Logging;
 using MoreLinq;
 
 namespace Lykke.Service.MarketMakerArbitrageDetector.Services
@@ -115,15 +116,15 @@ namespace Lykke.Service.MarketMakerArbitrageDetector.Services
         {
             try
             {
-                _log.Info("Arbitrage Detector timer started...");
+                _log.Debug("Arbitrage Detector timer started...");
                 Execute();
             }
             catch (Exception ex)
             {
                 _log.Error(ex);
             }
-
-            _log.Info("Arbitrage Detector timer finished.");
+            
+            _log.Debug("Arbitrage Detector timer finished.");
 
             return Task.CompletedTask;
         }
